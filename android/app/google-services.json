@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "848710174872",
+    "project_id": "tasklance-579d3",
+    "storage_bucket": "tasklance-579d3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848710174872:android:fec553aa7c79db6c37e8ed",
+        "android_client_info": {
+          "package_name": "com.tasklance.tasklance"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "[REDACTED]"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

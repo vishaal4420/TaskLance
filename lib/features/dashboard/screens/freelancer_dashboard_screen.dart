@@ -1,0 +1,462 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/date_formatter.dart';
+import '../../../core/widgets/avatar_widget.dart';
+import '../../../core/widgets/milestone_card.dart';
+import '../../../core/widgets/shimmer_widgets.dart';
+import '../../../data/seed_data.dart';
+import '../../auth/providers/auth_providers.dart';
+import '../providers/dashboard_providers.dart';
+import '../../../core/utils/seed_service.dart';
+import '../../../core/widgets/app_snackbar.dart';
+import '../../../core/widgets/responsive_wrapper.dart';
+
+final _dashboardProvider = FutureProvider<bool>((ref) async {
+  await Future.delayed(const Duration(milliseconds: 900));
+  return true;
+});
+
+class FreelancerDashboardScreen extends ConsumerWidget {
+  const FreelancerDashboardScreen({super.key});
+
+  String _greeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(currentUserProvider).valueOrNull ?? SeedData.currentFreelancer;
+    final projectsAsync = ref.watch(dashboardProjectsProvider);
+    final milestonesAsync = ref.watch(dashboardMilestonesProvider);
+
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/invoices/create'),
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.receipt_outlined, color: Colors.white),
+        label: Text('New Invoice',
+            style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(_dashboardProvider.future),
+        child: ResponsiveWrapper(
+          child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 120,
+              floating: true,
+              snap: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: () => context.push('/search'),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                  onPressed: () => context.push('/notifications'),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.cloud_upload, color: Colors.white),
+                  tooltip: 'Seed Firebase Database',
+                  onPressed: () async {
+                    AppSnackBar.success(context, 'Seeding database...');
+                    await SeedService.seedDatabase();
+                    AppSnackBar.success(context, 'Database seeded successfully!');
+                  },
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  alignment: Alignment.bottomLeft,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary,
+                        AppColors.primary.withOpacity(0.8),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${_greeting()}, ${user.name.split(' ').first} 👋',
+                              style: AppTextStyles.headlineMedium
+                                  .copyWith(color: Colors.white),
+                            ),
+                            Text(
+                              DateFormatter.format(DateTime.now()),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                  color: Colors.white.withOpacity(0.8)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AvatarWidget(
+                        url: user.avatarUrl,
+                        name: user.name,
+                        size: 44,
+                        onTap: () => context.push('/profile'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.all(16),
+              sliver: projectsAsync.when(
+                loading: () => SliverList(
+                  delegate: SliverChildListDelegate([
+                    const ShimmerCard(height: 80),
+                    const SizedBox(height: 12),
+                    const ShimmerCard(height: 200),
+                    const SizedBox(height: 12),
+                    const ShimmerCard(height: 200),
+                  ]),
+                ),
+                error: (e, _) => SliverToBoxAdapter(
+                  child: Center(child: Text('Error: $e')),
+                ),
+                data: (projects) {
+                  return milestonesAsync.when(
+                    loading: () => SliverList(
+                      delegate: SliverChildListDelegate([
+                        const ShimmerCard(height: 80),
+                        const SizedBox(height: 12),
+                        const ShimmerCard(height: 200),
+                      ]),
+                    ),
+                    error: (e, _) => SliverToBoxAdapter(
+                      child: Center(child: Text('Error: $e')),
+                    ),
+                    data: (milestones) {
+                      return SliverList(
+                        delegate: SliverChildListDelegate([
+                          // Stat cards
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 160,
+                                child: _StatCard(
+                                  label: 'Total Earned',
+                                  value: CurrencyFormatter.formatCompact(
+                                      SeedData.totalEarned),
+                                  icon: Icons.account_balance_wallet_rounded,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 140,
+                                child: _StatCard(
+                                  label: 'Active',
+                                  value: projects
+                                      .where((p) => p.status.name == 'active')
+                                      .length
+                                      .toString(),
+                                  icon: Icons.folder_open_rounded,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 140,
+                                child: _StatCard(
+                                  label: 'Reviews',
+                                  value: milestones
+                                      .where((m) => m.status.name == 'review')
+                                      .length
+                                      .toString(),
+                                  icon: Icons.rate_review_rounded,
+                                  color: AppColors.warning,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          // Upcoming deadlines
+                          _SectionHeader(
+                            title: 'Upcoming Deadlines',
+                            onSeeAll: () => context.push('/projects'),
+                          ),
+                          const SizedBox(height: 12),
+                          if (milestones.isEmpty)
+                            const Center(child: Text('No upcoming deadlines.'))
+                          else
+                            ...milestones
+                                .where((m) => m.status.name != 'approved')
+                                .take(3)
+                                .map((m) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: MilestoneCard(
+                                        milestone: m,
+                                        onTap: () =>
+                                            context.push('/milestones/${m.id}'),
+                                      ),
+                                    )),
+                    const SizedBox(height: 24),
+                    // Recent activity
+                    _SectionHeader(title: 'Recent Activity', onSeeAll: null),
+                    const SizedBox(height: 12),
+                    _ActivityFeed(),
+                    const SizedBox(height: 24),
+                    // Quick actions
+                    _SectionHeader(title: 'Quick Actions', onSeeAll: null),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _QuickActionButton(
+                          icon: Icons.work_outline_rounded,
+                          label: 'Find Work',
+                          onTap: () => context.push('/find-work'),
+                        ),
+                        _QuickActionButton(
+                          icon: Icons.receipt_outlined,
+                          label: 'Invoices',
+                          onTap: () => context.push('/invoices'),
+                        ),
+                        _QuickActionButton(
+                          icon: Icons.calendar_month_outlined,
+                          label: 'Calendar',
+                          onTap: () => context.push('/calendar'),
+                        ),
+                        _QuickActionButton(
+                          icon: Icons.bar_chart_rounded,
+                          label: 'Analytics',
+                          onTap: () => context.push('/analytics'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 80),
+                        ]),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(height: 10),
+            Text(value,
+                style: AppTextStyles.headlineSmall.copyWith(color: color)),
+            Text(label,
+                style: AppTextStyles.labelSmall.copyWith(
+                    color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis),
+          ],
+        ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final VoidCallback? onSeeAll;
+
+  const _SectionHeader({required this.title, this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(title, style: AppTextStyles.titleLarge),
+        const Spacer(),
+        if (onSeeAll != null)
+          TextButton(onPressed: onSeeAll, child: const Text('See all')),
+      ],
+    );
+  }
+}
+
+class _ActivityFeed extends StatelessWidget {
+  static const _items = [
+    _ActivityItem(
+      icon: Icons.check_circle_rounded,
+      color: AppColors.secondary,
+      text: 'Milestone "Core Screens" approved by Sarah Chen',
+      time: '3 hours ago',
+    ),
+    _ActivityItem(
+      icon: Icons.payments_rounded,
+      color: AppColors.success,
+      text: 'Payment of \$4,070 received for INV-2026-002',
+      time: '5 hours ago',
+    ),
+    _ActivityItem(
+      icon: Icons.chat_bubble_rounded,
+      color: AppColors.primary,
+      text: 'New message from Sarah Chen',
+      time: '2 hours ago',
+    ),
+    _ActivityItem(
+      icon: Icons.schedule_rounded,
+      color: AppColors.warning,
+      text: 'Milestone "API Integration" due in 4 days',
+      time: '1 day ago',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        children: _items
+            .map((item) => _ActivityTile(item: item))
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _ActivityItem {
+  final IconData icon;
+  final Color color;
+  final String text;
+  final String time;
+
+  const _ActivityItem({
+    required this.icon,
+    required this.color,
+    required this.text,
+    required this.time,
+  });
+}
+
+class _ActivityTile extends StatelessWidget {
+  final _ActivityItem item;
+
+  const _ActivityTile({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: item.color.withOpacity(0.12),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(item.icon, color: item.color, size: 18),
+      ),
+      title: Text(item.text, style: AppTextStyles.bodySmall, maxLines: 2),
+      subtitle: Text(item.time,
+          style: AppTextStyles.labelSmall
+              .copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
+      dense: true,
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _QuickActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 100,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: AppTextStyles.labelSmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
