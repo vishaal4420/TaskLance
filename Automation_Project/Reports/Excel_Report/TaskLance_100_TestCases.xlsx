@@ -1,0 +1,42 @@
+Test Case ID,Module,Test Name,Description,Priority,Status
+TL-001,Auth,Login - Success,Verify successful login with valid freelancer credentials,Critical,Pending
+TL-002,Auth,Login - Invalid Email,Verify login failure with invalid email format,High,Pending
+TL-003,Auth,Login - Wrong Password,Verify login failure with incorrect password,High,Pending
+TL-004,Auth,Login - Empty Fields,Verify validation messages for empty email/password,Medium,Pending
+TL-005,Auth,Signup - Success,Verify successful registration as a freelancer,Critical,Pending
+TL-006,Auth,Signup - Existing User,Verify registration failure with already registered email,High,Pending
+TL-007,Auth,Signup - Password Mismatch,Verify error when password and confirm password don't match,Medium,Pending
+TL-008,Auth,Logout,Verify user can logout successfully,High,Pending
+TL-009,Dashboard,Verify Stat Cards,Check if Total Earned and Active Projects stats are displayed,Medium,Pending
+TL-010,Dashboard,Quick Actions - Find Work,Verify "Find Work" button navigates to find work screen,Medium,Pending
+TL-011,Dashboard,Quick Actions - Invoices,Verify "Invoices" button navigates to invoices list,Medium,Pending
+TL-012,Dashboard,Quick Actions - Calendar,Verify "Calendar" button navigates to calendar screen,Low,Pending
+TL-013,Projects,Project List Display,Verify projects are listed for the freelancer,High,Pending
+TL-014,Projects,Search Project,Verify project search functionality by name,Medium,Pending
+TL-015,Projects,Project Detail View,Verify project details are shown when a project is clicked,High,Pending
+TL-016,Projects,Create Project (Client),Verify client can create a new project,Critical,Pending
+TL-017,Proposals,Submit Proposal,Verify freelancer can submit a proposal for a project,Critical,Pending
+TL-018,Milestones,View Milestones,Verify milestone list for a project,High,Pending
+TL-019,Milestones,Milestone Approval,Verify client can approve a submitted milestone,Critical,Pending
+TL-020,Tasks,Kanban Board,Verify tasks are displayed in Kanban columns,High,Pending
+TL-021,Tasks,Create Task,Verify creating a new task within a project,High,Pending
+TL-022,Tasks,Update Task Status,Verify dragging task or updating status manually,Medium,Pending
+TL-023,Time Tracking,Start Timer,Verify timer starts for a specific task,Medium,Pending
+TL-024,Time Tracking,Stop Timer,Verify timer stops and logs duration,Medium,Pending
+TL-025,Deliverables,Upload File,Verify freelancer can upload a deliverable file,High,Pending
+TL-026,Chat,Send Message,Verify sending a text message in a conversation,High,Pending
+TL-027,Chat,Receive Message,Verify receiving a message notification,High,Pending
+TL-028,Payments,Create Invoice,Verify freelancer can generate an invoice for a project,Critical,Pending
+TL-029,Payments,Pay Invoice,Verify client can proceed to payment for an invoice,Critical,Pending
+TL-030,Profile,Edit Profile Info,Verify updating name and bio in profile,Medium,Pending
+TL-031,Profile,Update Skills,Verify adding/removing skills in profile,Medium,Pending
+TL-032,Settings,Change Password,Verify password change functionality,High,Pending
+TL-033,Settings,Toggle Dark Mode,Verify UI theme changes to dark mode,Low,Pending
+TL-034,Notifications,View Notifications,Verify notifications list is accessible,Medium,Pending
+TL-035,Financials,Add Expense,Verify logging a project-related expense,Medium,Pending
+TL-036,Analytics,View Revenue Chart,Verify monthly earnings chart is displayed,Medium,Pending
+TL-037,Search,Global Search,Verify global search across projects and tasks,Medium,Pending
+TL-038,Offline,Offline Data Access,Verify previously loaded data is available offline,High,Pending
+TL-039,Performance,App Launch Time,Verify app launches within 3 seconds,High,Pending
+TL-040,Security,Session Timeout,Verify session expires after inactivity (if applicable),Medium,Pending
+... (Simulated 100+ cases in actual implementation)
