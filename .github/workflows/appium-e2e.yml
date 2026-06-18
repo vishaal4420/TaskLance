@@ -1,0 +1,39 @@
+name: Appium E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  e2e-tests:
+    # Use your self-hosted runner. You can add more specific labels if needed, e.g., [self-hosted, windows, x64]
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-excel Appium-Python-Client selenium
+
+      # Note: We assume the self-hosted runner already has an active Appium server running 
+      # and the Android Emulator/Device connected. If not, add steps to start them here.
+      - name: Run Appium E2E Test Suite
+        run: |
+          pytest appium_e2e_suite/ --excelreport=TaskLance_Test_Report.xlsx
+
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Appium-E2E-Report
+          path: TaskLance_Test_Report.xlsx
