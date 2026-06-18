@@ -64,7 +64,7 @@ class _ProposalDetailScreenState extends ConsumerState<ProposalDetailScreen> {
       final contractRef = FirebaseFirestore.instance.collection('contracts').doc(contractId);
       final terms = 'This Master Service Agreement ("Agreement") is made effective as of ${DateTime.now().toIso8601String().substring(0, 10)}, by and between ${proposal['freelancerName']} and ${proposal['clientName'] ?? 'Client'}.\n\n'
                     '1. SERVICES PROVIDED. Freelancer agrees to provide services as described in the proposal.\n\n'
-                    '2. PAYMENT. Client agrees to pay Freelancer the total amount of \$${bidAmount}.\n\n'
+                    '2. PAYMENT. Client agrees to pay Freelancer the total amount of \$$bidAmount.\n\n'
                     '3. SCOPE OF WORK. ${proposal['coverLetter'] ?? 'As discussed.'}\n\n'
                     '4. CONFIDENTIALITY. Freelancer agrees to keep all proprietary client information confidential.\n';
       

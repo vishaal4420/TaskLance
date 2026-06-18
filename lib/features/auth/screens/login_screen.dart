@@ -21,7 +21,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  UserRole _role = UserRole.freelancer;
 
   @override
   void dispose() {
@@ -34,7 +33,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     await ref
         .read(authNotifierProvider.notifier)
-        .signIn(_emailCtrl.text.trim(), _passwordCtrl.text, _role);
+        .signIn(_emailCtrl.text.trim(), _passwordCtrl.text);
     if (!mounted) return;
     final state = ref.read(authNotifierProvider);
     if (state.hasError) {
@@ -98,27 +97,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onFieldSubmitted: (_) => _signIn(),
                 ),
                 const SizedBox(height: 24),
-                // Role selector for testing
-                SegmentedButton<UserRole>(
-                  segments: const [
-                    ButtonSegment(
-                      value: UserRole.freelancer,
-                      label: Text('Freelancer'),
-                      icon: Icon(Icons.work_rounded, size: 18),
-                    ),
-                    ButtonSegment(
-                      value: UserRole.client,
-                      label: Text('Client'),
-                      icon: Icon(Icons.business_rounded, size: 18),
-                    ),
-                  ],
-                  selected: {_role},
-                  onSelectionChanged: (Set<UserRole> newSelection) {
-                    setState(() {
-                      _role = newSelection.first;
-                    });
-                  },
-                ),
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
@@ -135,6 +113,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   isLoading: authState.isLoading,
                   width: double.infinity,
                 ),
+                
+                // Testing bypass buttons
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        _emailCtrl.text = 'freelancer123@gmail.com';
+                        _passwordCtrl.text = '12345678';
+                      },
+                      icon: const Icon(Icons.person, size: 16),
+                      label: const Text('Fill Freelancer'),
+                    ),
+                    TextButton.icon(
+                      onPressed: () {
+                        _emailCtrl.text = 'murali123@gmail.com';
+                        _passwordCtrl.text = '12345678';
+                      },
+                      icon: const Icon(Icons.business, size: 16),
+                      label: const Text('Fill Client'),
+                    ),
+                  ],
+                ),
+                
                 const SizedBox(height: 32),
                 Row(
                   children: [

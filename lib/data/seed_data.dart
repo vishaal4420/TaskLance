@@ -136,6 +136,24 @@ class SeedData {
       teamMemberUids: ['seed_freelancer_001'],
       createdAt: DateTime(2025, 10, 28),
     ),
+    ProjectModel(
+      id: 'seed_project_004',
+      title: 'Looking for a Flutter Developer',
+      description:
+          'We need a skilled Flutter developer to build a new social networking app from scratch. Must have experience with Firebase and real-time messaging.',
+      clientUid: 'seed_client_002',
+      clientName: 'Marcus Johnson',
+      status: ProjectStatus.open,
+      pricingType: PricingType.hourly,
+      budget: 6000,
+      spent: 0,
+      startDate: DateTime(2026, 6, 1),
+      endDate: DateTime(2026, 9, 1),
+      completedMilestones: 0,
+      totalMilestones: 4,
+      teamMemberUids: [],
+      createdAt: DateTime(2026, 5, 28),
+    ),
   ];
 
   // ─── Milestones ───────────────────────────────────────────────────────────

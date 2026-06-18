@@ -5,8 +5,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/cards.dart';
 import '../../../core/widgets/empty_error_states.dart';
-import '../../../core/widgets/app_snackbar.dart';
-import '../../../data/seed_data.dart';
 import '../../../models/task.dart';
 
 import '../providers/task_providers.dart';
@@ -47,6 +45,7 @@ class _KanbanBoardScreenState extends ConsumerState<KanbanBoardScreen> {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Add Task',
         onPressed: _showCreateTask,
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),

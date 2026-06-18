@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
@@ -99,7 +101,15 @@ class _DeliverablesScreenState extends ConsumerState<DeliverablesScreen> {
                   itemCount: filtered.length,
                   itemBuilder: (_, i) {
                     final d = filtered[i];
-                    final type = d['type'] as String;
+                    final fileName = (d['fileName'] as String?) ?? (d['name'] as String?) ?? 'file';
+                    final title = (d['title'] as String?) ?? fileName;
+                    final ext = fileName.contains('.') ? fileName.split('.').last.toLowerCase() : 'file';
+                    final type = (d['type'] as String?) ?? (
+                      (ext == 'pdf') ? 'pdf' :
+                      (ext == 'png' || ext == 'jpg' || ext == 'jpeg') ? 'image' :
+                      (ext == 'doc' || ext == 'docx') ? 'doc' : 'file'
+                    );
+                    
                     final Color typeColor = type == 'pdf'
                         ? Colors.red
                         : type == 'image'
@@ -107,14 +117,25 @@ class _DeliverablesScreenState extends ConsumerState<DeliverablesScreen> {
                             : type == 'doc'
                                 ? Colors.green
                                 : AppColors.primary;
+                                
+                    final status = (d['status'] as String?) ?? 'pending';
+                    String dateStr = d['date'] as String? ?? '';
+                    if (dateStr.isEmpty && d['createdAt'] != null) {
+                      final dt = (d['createdAt'] as Timestamp).toDate();
+                      dateStr = DateFormat('MMM dd, yyyy').format(dt);
+                    }
+                    if (dateStr.isEmpty) dateStr = 'Unknown';
+                    
+                    final fileUrl = d['fileUrl'] as String? ?? 'demo';
+
                     return GestureDetector(
                       onTap: () => context.push(
-                          '/deliverables/preview?url=demo&name=${d['name']}'),
+                          '/deliverables/preview?url=$fileUrl&name=$fileName'),
                       child: _DeliverableCard(
-                        name: d['name'] as String,
+                        name: title,
                         type: type,
-                        status: d['status'] as String,
-                        date: d['date'] as String,
+                        status: status,
+                        date: dateStr,
                         color: typeColor,
                       ),
                     );

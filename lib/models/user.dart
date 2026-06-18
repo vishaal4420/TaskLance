@@ -23,6 +23,9 @@ class UserModel {
   final double totalEarned;
   final double onTimePercent;
   final bool emailVerified;
+  final bool pushNotifs;
+  final bool emailNotifs;
+  final bool marketingNotifs;
   final DateTime createdAt;
   final List<String> teamMemberUids;
 
@@ -47,6 +50,9 @@ class UserModel {
     this.totalEarned = 0,
     this.onTimePercent = 0,
     this.emailVerified = false,
+    this.pushNotifs = true,
+    this.emailNotifs = true,
+    this.marketingNotifs = false,
     required this.createdAt,
     this.teamMemberUids = const [],
   });
@@ -72,6 +78,9 @@ class UserModel {
         totalEarned: (json['totalEarned'] as num?)?.toDouble() ?? 0,
         onTimePercent: (json['onTimePercent'] as num?)?.toDouble() ?? 0,
         emailVerified: json['emailVerified'] as bool? ?? false,
+        pushNotifs: json['pushNotifs'] as bool? ?? true,
+        emailNotifs: json['emailNotifs'] as bool? ?? true,
+        marketingNotifs: json['marketingNotifs'] as bool? ?? false,
         createdAt: json['createdAt'] is Timestamp
             ? (json['createdAt'] as Timestamp).toDate()
             : DateTime.parse(json['createdAt'] as String),
@@ -99,6 +108,9 @@ class UserModel {
         'totalEarned': totalEarned,
         'onTimePercent': onTimePercent,
         'emailVerified': emailVerified,
+        'pushNotifs': pushNotifs,
+        'emailNotifs': emailNotifs,
+        'marketingNotifs': marketingNotifs,
         'createdAt': createdAt.toIso8601String(),
         'teamMemberUids': teamMemberUids,
       };
@@ -115,6 +127,9 @@ class UserModel {
     String? githubUrl,
     String? linkedinUrl,
     String? portfolioUrl,
+    bool? pushNotifs,
+    bool? emailNotifs,
+    bool? marketingNotifs,
     List<String>? teamMemberUids,
   }) =>
       UserModel(
@@ -138,6 +153,9 @@ class UserModel {
         totalEarned: totalEarned,
         onTimePercent: onTimePercent,
         emailVerified: emailVerified,
+        pushNotifs: pushNotifs ?? this.pushNotifs,
+        emailNotifs: emailNotifs ?? this.emailNotifs,
+        marketingNotifs: marketingNotifs ?? this.marketingNotifs,
         createdAt: createdAt,
         teamMemberUids: teamMemberUids ?? this.teamMemberUids,
       );

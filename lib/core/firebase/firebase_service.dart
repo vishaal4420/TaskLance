@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/user.dart';
@@ -11,8 +10,6 @@ final firebaseServiceProvider =
 class FirebaseService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -136,16 +133,4 @@ class FirebaseService {
     await batch.commit();
   }
 
-  Future<String> uploadAvatar(String uid, dynamic file) async {
-    if (kIsWeb) {
-      final ref = _storage.ref('avatars/$uid/avatar.jpg');
-      final data = file is List<int> ? Uint8List.fromList(file) : file as Uint8List;
-      await ref.putData(data);
-      return ref.getDownloadURL();
-    } else {
-      final ref = _storage.ref('avatars/$uid/avatar.jpg');
-      await ref.putFile(file);
-      return ref.getDownloadURL();
-    }
-  }
 }

@@ -9,7 +9,6 @@ import '../../../core/widgets/empty_error_states.dart';
 import '../../../models/project.dart';
 import '../../../models/user.dart';
 import '../../auth/providers/auth_providers.dart';
-import '../providers/project_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 
 class ProjectListScreen extends ConsumerStatefulWidget {
@@ -34,6 +33,7 @@ class _ProjectListScreenState extends ConsumerState<ProjectListScreen> {
     return Scaffold(
       floatingActionButton: ref.watch(currentUserRoleProvider) == UserRole.client
           ? FloatingActionButton(
+              tooltip: 'Post Project',
               onPressed: () => context.push('/projects/create'),
               backgroundColor: AppColors.primary,
               child: const Icon(Icons.add, color: Colors.white),

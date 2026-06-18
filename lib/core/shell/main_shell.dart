@@ -80,7 +80,20 @@ class MainShell extends ConsumerWidget {
         }
 
         // Mobile layout
-        return Scaffold(
+        final locationStr = GoRouterState.of(context).uri.toString();
+        final isDashboard = locationStr == '/dashboard' || locationStr == '/client-dashboard';
+        final canPopRoute = context.canPop();
+        final shouldIntercept = !canPopRoute && !isDashboard;
+
+        return PopScope(
+          canPop: !shouldIntercept,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            if (shouldIntercept) {
+              _onNavigate(context, ref, 0);
+            }
+          },
+          child: Scaffold(
           body: child,
           bottomNavigationBar: SafeArea(
             child: Container(
@@ -136,11 +149,12 @@ class MainShell extends ConsumerWidget {
                 ),
               ),
             ),
+            ),
           ),
-          ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
   }
 
   void _onNavigate(BuildContext context, WidgetRef ref, int index) {

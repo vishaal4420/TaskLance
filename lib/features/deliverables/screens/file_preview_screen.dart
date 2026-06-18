@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -29,21 +30,13 @@ class FilePreviewScreen extends StatelessWidget {
             : Icons.insert_drive_file_rounded;
 
     void handleShare() {
-      final actualUrl = fileUrl == 'demo' ? 'https://tasklance.app/demo-file.pdf' : fileUrl;
-      Share.share('Check out this file from TaskLance: $actualUrl');
+      Share.share('Check out this file from TaskLance: $fileUrl');
     }
 
     void handleDownload() async {
-      final actualUrl = fileUrl == 'demo' ? 'https://tasklance.app/demo-file.pdf' : fileUrl;
-      final Uri url = Uri.parse(actualUrl);
-      try {
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        } else {
-          if (context.mounted) AppSnackBar.error(context, 'Could not launch download link');
-        }
-      } catch (e) {
-        if (context.mounted) AppSnackBar.error(context, 'Invalid download URL');
+      // It's already saved locally. Just tell the user where it is.
+      if (context.mounted) {
+        AppSnackBar.success(context, 'File is saved at: $fileUrl');
       }
     }
 
@@ -74,23 +67,47 @@ class FilePreviewScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(24),
+                  if ((ext == 'png' || ext == 'jpg' || ext == 'jpeg') && !fileUrl.startsWith('http'))
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.file(
+                        File(fileUrl),
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        height: MediaQuery.of(context).size.height * 0.4,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60, color: Colors.white),
+                      ),
+                    )
+                  else if ((ext == 'png' || ext == 'jpg' || ext == 'jpeg') && fileUrl.startsWith('http'))
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        fileUrl,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        height: MediaQuery.of(context).size.height * 0.4,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 60, color: Colors.white),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: typeColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Icon(icon, color: typeColor, size: 60),
                     ),
-                    child: Icon(icon, color: typeColor, size: 60),
-                  ),
                   const SizedBox(height: 20),
                   Text(fileName,
                       style: AppTextStyles.titleLarge.copyWith(color: Colors.white),
                       textAlign: TextAlign.center),
                   const SizedBox(height: 8),
-                  Text('Demo preview',
-                      style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.white.withOpacity(0.6))),
+                  if (ext != 'png' && ext != 'jpg' && ext != 'jpeg')
+                    Text('No preview available',
+                        style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.6))),
                 ],
               ),
             ),

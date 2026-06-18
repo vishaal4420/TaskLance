@@ -5,9 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/avatar_widget.dart';
-import '../../../core/widgets/shimmer_widgets.dart';
 import '../../../core/widgets/empty_error_states.dart';
-import '../../../core/widgets/responsive_wrapper.dart';
+
 import '../../auth/providers/auth_providers.dart';
 import '../../../models/user.dart';
 
@@ -45,8 +44,7 @@ class ProfileScreen extends ConsumerWidget {
           
           final isOwner = dynamicUser?.uid == user.uid;
 
-          return ResponsiveWrapper(
-            child: CustomScrollView(
+          return CustomScrollView(
               slivers: [
               SliverAppBar(
                 expandedHeight: 280,
@@ -60,6 +58,7 @@ class ProfileScreen extends ConsumerWidget {
                       onPressed: () => context.push('/profile/edit'),
                     ),
                     IconButton(
+                      tooltip: 'Settings',
                       icon: const Icon(Icons.settings, color: Colors.white),
                       onPressed: () => context.push('/settings'),
                     ),
@@ -132,6 +131,30 @@ class ProfileScreen extends ConsumerWidget {
                                 style: AppTextStyles.bodyMedium.copyWith(color: Colors.white.withOpacity(0.9)),
                               ),
                             ],
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.location_on, color: Colors.white, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Location: San Francisco, CA',
+                                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.access_time, color: Colors.white, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Timezone: PST',
+                                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -231,12 +254,37 @@ class ProfileScreen extends ConsumerWidget {
                                 height: 1.6,
                               ),
                             ),
+                            if (isOwner) ...[
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Available for work', style: AppTextStyles.titleMedium),
+                                  Switch(
+                                    value: true,
+                                    onChanged: (val) {},
+                                    activeColor: AppColors.primary,
+                                  ),
+                                ],
+                              ),
+                            ],
                             const SizedBox(height: 32),
                           ],
 
                           // Skills
                           if (user.skills.isNotEmpty) ...[
-                            Text('Skills', style: AppTextStyles.headlineSmall),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Skills', style: AppTextStyles.headlineSmall),
+                                if (isOwner)
+                                  IconButton(
+                                    tooltip: 'Add Skill',
+                                    icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                                    onPressed: () {},
+                                  ),
+                              ],
+                            ),
                             const SizedBox(height: 16),
                             Wrap(
                               spacing: 10,
@@ -248,14 +296,54 @@ class ProfileScreen extends ConsumerWidget {
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: AppColors.primary.withOpacity(0.3)),
                                 ),
-                                child: Text(
-                                  s,
-                                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      s,
+                                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
+                                    ),
+                                    if (isOwner) ...[
+                                      const SizedBox(width: 8),
+                                      InkWell(
+                                        onTap: () {},
+                                        child: const Icon(Icons.close, size: 16, color: AppColors.primary, semanticLabel: 'Remove Skill'),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               )).toList(),
                             ),
                             const SizedBox(height: 32),
                           ],
+                          
+                          // Portfolio
+                          Text('Portfolio', style: AppTextStyles.headlineSmall),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.upload_file, color: AppColors.primary),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text('Upload Portfolio Item', style: AppTextStyles.bodyMedium),
+                                ),
+                                if (isOwner)
+                                  IconButton(
+                                    tooltip: 'Portfolio',
+                                    icon: const Icon(Icons.cloud_upload_rounded, color: AppColors.primary),
+                                    onPressed: () {},
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
 
                           // Settings list
                           if (isOwner) ...[
@@ -335,8 +423,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
             ],
-          ),
-        );
+          );
       },
     ),
   );

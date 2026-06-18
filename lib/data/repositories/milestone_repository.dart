@@ -13,7 +13,9 @@ class MilestoneRepository extends BaseRepository {
   Stream<MilestoneModel?> streamMilestone(String milestoneId) {
     return collection(_collectionName).doc(milestoneId).snapshots().map((doc) {
       if (doc.exists && doc.data() != null) {
-        return MilestoneModel.fromJson(doc.data()!);
+        final data = Map<String, dynamic>.from(doc.data()!);
+        data['id'] = doc.id;
+        return MilestoneModel.fromJson(data);
       }
       return null;
     });
@@ -26,7 +28,11 @@ class MilestoneRepository extends BaseRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => MilestoneModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return MilestoneModel.fromJson(data);
+          })
           .toList();
     });
   }
@@ -43,7 +49,11 @@ class MilestoneRepository extends BaseRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => MilestoneModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return MilestoneModel.fromJson(data);
+          })
           .toList();
     });
   }

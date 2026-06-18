@@ -6,13 +6,9 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_snackbar.dart';
-import '../../../core/widgets/avatar_widget.dart';
 import '../../../core/utils/validators.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
-import '../../../models/user.dart';
 import '../../../models/project.dart';
-import '../../../models/notification_model.dart';
 import '../../../data/repositories/project_repository.dart';
 import '../../auth/providers/auth_providers.dart';
 
@@ -187,7 +183,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
             ),
             const SizedBox(height: 32),
             AppButton(
-              label: 'Create Project',
+              label: 'Submit',
               onPressed: _create,
               isLoading: _loading,
               width: double.infinity,

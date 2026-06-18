@@ -133,7 +133,7 @@ class _CreateTaskScreenState extends ConsumerState<CreateTaskScreen> {
                             color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<ProjectModel>(
-                      value: _selectedProject,
+                      initialValue: _selectedProject,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         filled: true,

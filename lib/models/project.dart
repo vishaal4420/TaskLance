@@ -48,36 +48,80 @@ class ProjectModel {
 
   int get daysRemaining => endDate.difference(DateTime.now()).inDays;
 
+  ProjectModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? freelancerUid,
+    String? clientUid,
+    String? clientName,
+    String? clientAvatarUrl,
+    ProjectStatus? status,
+    PricingType? pricingType,
+    double? budget,
+    double? spent,
+    DateTime? startDate,
+    DateTime? endDate,
+    int? completedMilestones,
+    int? totalMilestones,
+    List<String>? teamMemberUids,
+    DateTime? createdAt,
+  }) {
+    return ProjectModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      freelancerUid: freelancerUid ?? this.freelancerUid,
+      clientUid: clientUid ?? this.clientUid,
+      clientName: clientName ?? this.clientName,
+      clientAvatarUrl: clientAvatarUrl ?? this.clientAvatarUrl,
+      status: status ?? this.status,
+      pricingType: pricingType ?? this.pricingType,
+      budget: budget ?? this.budget,
+      spent: spent ?? this.spent,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      completedMilestones: completedMilestones ?? this.completedMilestones,
+      totalMilestones: totalMilestones ?? this.totalMilestones,
+      teamMemberUids: teamMemberUids ?? this.teamMemberUids,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   factory ProjectModel.fromJson(Map<String, dynamic> json) => ProjectModel(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String,
-        freelancerUid: json['freelancerUid'] as String?,
-        clientUid: json['clientUid'] as String,
-        clientName: json['clientName'] as String?,
-        clientAvatarUrl: json['clientAvatarUrl'] as String?,
+        id: json['id']?.toString() ?? '',
+        title: json['title']?.toString() ?? 'Untitled Project',
+        description: json['description']?.toString() ?? 'No description provided.',
+        freelancerUid: json['freelancerUid']?.toString(),
+        clientUid: json['clientUid']?.toString() ?? '',
+        clientName: json['clientName']?.toString(),
+        clientAvatarUrl: json['clientAvatarUrl']?.toString(),
         status: ProjectStatus.values.firstWhere(
           (e) => e.name == json['status'],
-          orElse: () => ProjectStatus.active,
+          orElse: () => ProjectStatus.open,
         ),
         pricingType: json['pricingType'] == 'hourly'
             ? PricingType.hourly
             : PricingType.fixedPrice,
-        budget: (json['budget'] as num).toDouble(),
-        spent: (json['spent'] as num?)?.toDouble() ?? 0,
-        startDate: json['startDate'] is Timestamp
-            ? (json['startDate'] as Timestamp).toDate()
-            : DateTime.parse(json['startDate'] as String),
-        endDate: json['endDate'] is Timestamp
-            ? (json['endDate'] as Timestamp).toDate()
-            : DateTime.parse(json['endDate'] as String),
-        completedMilestones: json['completedMilestones'] as int? ?? 0,
-        totalMilestones: json['totalMilestones'] as int? ?? 0,
-        teamMemberUids: List<String>.from(json['teamMemberUids'] ?? []),
-        createdAt: json['createdAt'] is Timestamp
-            ? (json['createdAt'] as Timestamp).toDate()
-            : DateTime.parse(json['createdAt'] as String),
+        budget: double.tryParse(json['budget']?.toString() ?? '0') ?? 0.0,
+        spent: double.tryParse(json['spent']?.toString() ?? '0') ?? 0.0,
+        startDate: _parseDate(json['startDate']),
+        endDate: _parseDate(json['endDate']),
+        completedMilestones: int.tryParse(json['completedMilestones']?.toString() ?? '0') ?? 0,
+        totalMilestones: int.tryParse(json['totalMilestones']?.toString() ?? '0') ?? 0,
+        teamMemberUids: (json['teamMemberUids'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        createdAt: _parseDate(json['createdAt']),
       );
+
+  static DateTime _parseDate(dynamic dateVal) {
+    if (dateVal == null) return DateTime.now();
+    if (dateVal is Timestamp) return dateVal.toDate();
+    if (dateVal is String) return DateTime.tryParse(dateVal) ?? DateTime.now();
+    return DateTime.now();
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,

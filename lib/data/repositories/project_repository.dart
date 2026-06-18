@@ -14,7 +14,9 @@ class ProjectRepository extends BaseRepository {
   Stream<ProjectModel?> streamProject(String projectId) {
     return collection(_collectionName).doc(projectId).snapshots().map((doc) {
       if (doc.exists && doc.data() != null) {
-        return ProjectModel.fromJson(doc.data()!);
+        final data = Map<String, dynamic>.from(doc.data()!);
+        data['id'] = doc.id;
+        return ProjectModel.fromJson(data);
       }
       return null;
     });
@@ -32,7 +34,11 @@ class ProjectRepository extends BaseRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => ProjectModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return ProjectModel.fromJson(data);
+          })
           .toList();
     });
   }
@@ -44,7 +50,11 @@ class ProjectRepository extends BaseRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => ProjectModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return ProjectModel.fromJson(data);
+          })
           .toList();
     });
   }

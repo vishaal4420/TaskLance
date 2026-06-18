@@ -13,7 +13,7 @@ import '../../auth/providers/auth_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../../../core/utils/seed_service.dart';
 import '../../../core/widgets/app_snackbar.dart';
-import '../../../core/widgets/responsive_wrapper.dart';
+
 
 final _dashboardProvider = FutureProvider<bool>((ref) async {
   await Future.delayed(const Duration(milliseconds: 900));
@@ -46,8 +46,7 @@ class FreelancerDashboardScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(_dashboardProvider.future),
-        child: ResponsiveWrapper(
-          child: CustomScrollView(
+        child: CustomScrollView(
           slivers: [
             SliverAppBar(
               expandedHeight: 120,
@@ -149,23 +148,19 @@ class FreelancerDashboardScreen extends ConsumerWidget {
                       return SliverList(
                         delegate: SliverChildListDelegate([
                           // Stat cards
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            alignment: WrapAlignment.center,
+                          Row(
                             children: [
-                              SizedBox(
-                                width: 160,
+                              Expanded(
                                 child: _StatCard(
-                                  label: 'Total Earned',
+                                  label: 'Earned',
                                   value: CurrencyFormatter.formatCompact(
                                       SeedData.totalEarned),
                                   icon: Icons.account_balance_wallet_rounded,
                                   color: AppColors.secondary,
                                 ),
                               ),
-                              SizedBox(
-                                width: 140,
+                              const SizedBox(width: 8),
+                              Expanded(
                                 child: _StatCard(
                                   label: 'Active',
                                   value: projects
@@ -176,8 +171,8 @@ class FreelancerDashboardScreen extends ConsumerWidget {
                                   color: AppColors.primary,
                                 ),
                               ),
-                              SizedBox(
-                                width: 140,
+                              const SizedBox(width: 8),
+                              Expanded(
                                 child: _StatCard(
                                   label: 'Reviews',
                                   value: milestones
@@ -220,30 +215,38 @@ class FreelancerDashboardScreen extends ConsumerWidget {
                     // Quick actions
                     _SectionHeader(title: 'Quick Actions', onSeeAll: null),
                     const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      alignment: WrapAlignment.center,
+                    Row(
                       children: [
-                        _QuickActionButton(
-                          icon: Icons.work_outline_rounded,
-                          label: 'Find Work',
-                          onTap: () => context.push('/find-work'),
+                        Expanded(
+                          child: _QuickActionButton(
+                            icon: Icons.work_outline_rounded,
+                            label: 'Work',
+                            onTap: () => context.push('/find-work'),
+                          ),
                         ),
-                        _QuickActionButton(
-                          icon: Icons.receipt_outlined,
-                          label: 'Invoices',
-                          onTap: () => context.push('/invoices'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _QuickActionButton(
+                            icon: Icons.receipt_outlined,
+                            label: 'Invoices',
+                            onTap: () => context.push('/invoices'),
+                          ),
                         ),
-                        _QuickActionButton(
-                          icon: Icons.calendar_month_outlined,
-                          label: 'Calendar',
-                          onTap: () => context.push('/calendar'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _QuickActionButton(
+                            icon: Icons.calendar_month_outlined,
+                            label: 'Calendar',
+                            onTap: () => context.push('/calendar'),
+                          ),
                         ),
-                        _QuickActionButton(
-                          icon: Icons.bar_chart_rounded,
-                          label: 'Analytics',
-                          onTap: () => context.push('/analytics'),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _QuickActionButton(
+                            icon: Icons.bar_chart_rounded,
+                            label: 'Analytics',
+                            onTap: () => context.push('/analytics'),
+                          ),
                         ),
                       ],
                     ),
@@ -256,7 +259,6 @@ class FreelancerDashboardScreen extends ConsumerWidget {
               ),
             ),
           ],
-        ),
         ),
       ),
     );
@@ -281,7 +283,7 @@ class _StatCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(12),
@@ -436,7 +438,7 @@ class _QuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 100,
+      width: double.infinity,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(

@@ -17,6 +17,16 @@ class FindWorkScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Work'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
+        ),
       ),
       body: openProjectsAsync.when(
         loading: () => ListView.separated(

@@ -7,11 +7,12 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/avatar_widget.dart';
 import '../../../core/widgets/shimmer_widgets.dart';
-import '../../../core/widgets/responsive_wrapper.dart';
+
 import '../../../core/widgets/project_card.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../providers/dashboard_providers.dart';
 import '../../../models/milestone.dart';
+import '../../../core/utils/seed_service.dart';
 
 final _clientDashProvider = FutureProvider<bool>((ref) async {
   await Future.delayed(const Duration(milliseconds: 900));
@@ -31,14 +32,28 @@ class ClientDashboardScreen extends ConsumerWidget {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(_clientDashProvider.future),
-        child: ResponsiveWrapper(
-          child: CustomScrollView(
+        child: CustomScrollView(
             slivers: [
               SliverAppBar(
                 expandedHeight: 120,
                 floating: true,
                 snap: true,
                 actions: [
+                  IconButton(
+                    icon: const Icon(Icons.dataset, color: Colors.white),
+                    tooltip: 'Seed Firebase Database',
+                    onPressed: () async {
+                      try {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Seeding database...')));
+                        await SeedService.seedDatabase();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Database seeded successfully!')));
+                        ref.invalidate(dashboardProjectsProvider);
+                        ref.invalidate(dashboardMilestonesProvider);
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                      }
+                    },
+                  ),
                   IconButton(
                     icon: const Icon(Icons.search, color: Colors.white),
                     onPressed: () => context.push('/search'),
@@ -122,24 +137,20 @@ class ClientDashboardScreen extends ConsumerWidget {
                         return SliverList(
                           delegate: SliverChildListDelegate([
                             // Stat cards row
-                            Wrap(
-                              spacing: 10,
-                              runSpacing: 10,
-                              alignment: WrapAlignment.center,
+                            Row(
                               children: [
-                                SizedBox(
-                                  width: 160,
+                                Expanded(
                                   child: _ClientStatCard(
-                                    label: 'Total Spent',
+                                    label: 'Spent',
                                     value: CurrencyFormatter.formatCompact(0.0), // Need a payments provider later
                                     icon: Icons.account_balance_wallet_rounded,
                                     color: AppColors.primary,
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 160,
+                                const SizedBox(width: 8),
+                                Expanded(
                                   child: _ClientStatCard(
-                                    label: 'Active Projects',
+                                    label: 'Active',
                                     value: projects
                                         .where((p) => p.status.name == 'active')
                                         .length
@@ -148,8 +159,8 @@ class ClientDashboardScreen extends ConsumerWidget {
                                     color: AppColors.secondary,
                                   ),
                                 ),
-                                SizedBox(
-                                  width: 160,
+                                const SizedBox(width: 8),
+                                Expanded(
                                   child: Stack(
                                     clipBehavior: Clip.none,
                                     children: [
@@ -205,37 +216,6 @@ class ClientDashboardScreen extends ConsumerWidget {
                                   )),
                               const SizedBox(height: 24),
                             ],
-                            // Quick actions
-                            _SectionHeader(title: 'Quick Actions'),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 16,
-                              runSpacing: 16,
-                              alignment: WrapAlignment.center,
-                              children: [
-                                _QuickActionButton(
-                                  icon: Icons.receipt_outlined,
-                                  label: 'Invoices',
-                                  onTap: () => context.push('/invoices'),
-                                ),
-                                _QuickActionButton(
-                                  icon: Icons.calendar_month_outlined,
-                                  label: 'Calendar',
-                                  onTap: () => context.push('/calendar'),
-                                ),
-                                _QuickActionButton(
-                                  icon: Icons.people_outline_rounded,
-                                  label: 'Team',
-                                  onTap: () => context.push('/team'),
-                                ),
-                                _QuickActionButton(
-                                  icon: Icons.bar_chart_rounded,
-                                  label: 'Reports',
-                                  onTap: () => context.push('/analytics'),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
                             // Project progress
                             _SectionHeader(
                               title: 'Project Progress',
@@ -254,6 +234,45 @@ class ClientDashboardScreen extends ConsumerWidget {
                                     ),
                                   )),
                             const SizedBox(height: 32),
+                            // Quick actions
+                            _SectionHeader(title: 'Quick Actions'),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _QuickActionButton(
+                                    icon: Icons.receipt_outlined,
+                                    label: 'Invoices',
+                                    onTap: () => context.push('/invoices'),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _QuickActionButton(
+                                    icon: Icons.calendar_month_outlined,
+                                    label: 'Calendar',
+                                    onTap: () => context.push('/calendar'),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _QuickActionButton(
+                                    icon: Icons.people_outline_rounded,
+                                    label: 'Team',
+                                    onTap: () => context.push('/profile/team'),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: _QuickActionButton(
+                                    icon: Icons.bar_chart_rounded,
+                                    label: 'Reports',
+                                    onTap: () => context.push('/analytics'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
                           ]),
                         );
                       },
@@ -263,7 +282,6 @@ class ClientDashboardScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/projects/create'),
@@ -293,7 +311,7 @@ class _ClientStatCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(12),
@@ -372,9 +390,10 @@ class _QuickActionButton extends StatelessWidget {
     required this.onTap,
   });
 
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 100,
+      width: double.infinity,
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(

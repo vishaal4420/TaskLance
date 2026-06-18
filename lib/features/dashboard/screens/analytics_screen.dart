@@ -1,25 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
+
+  @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  bool _isWeekly = false;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics')),
+      appBar: AppBar(
+        title: const Text('Analytics'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _Section(
             title: 'Earnings Overview',
-            child: SizedBox(
-              height: 250,
-              child: BarChart(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Weekly'),
+                      selected: _isWeekly,
+                      onSelected: (val) {
+                        if (val) setState(() => _isWeekly = true);
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    ChoiceChip(
+                      label: const Text('Monthly'),
+                      selected: !_isWeekly,
+                      onSelected: (val) {
+                        if (val) setState(() => _isWeekly = false);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 250,
+                  child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   maxY: 6000,
@@ -59,8 +102,10 @@ class AnalyticsScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
+          ],
+        ),
+      ),
+      const SizedBox(height: 16),
           Row(
             children: [
               Expanded(

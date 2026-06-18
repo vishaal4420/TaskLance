@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../auth/providers/auth_providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../core/theme/theme_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -18,11 +19,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _emailEnabled = true;
   final bool _darkTheme = false;
 
+  Future<void> _updateNotificationPreference(String field, bool value, String uid) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        field: value,
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == ThemeMode.dark || 
         (themeMode == ThemeMode.system && Theme.of(context).brightness == Brightness.dark);
+    final user = ref.watch(currentUserProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -32,15 +46,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           SwitchListTile(
             title: const Text('Push Notifications'),
             subtitle: const Text('Get alerts on your device'),
-            value: _pushEnabled,
-            onChanged: (v) => setState(() => _pushEnabled = v),
+            value: user?.pushNotifs ?? true,
+            onChanged: (v) {
+              if (user != null) _updateNotificationPreference('pushNotifs', v, user.uid);
+            },
             activeThumbColor: AppColors.primary,
           ),
           SwitchListTile(
             title: const Text('Email Notifications'),
             subtitle: const Text('Receive daily summaries'),
-            value: _emailEnabled,
-            onChanged: (v) => setState(() => _emailEnabled = v),
+            value: user?.emailNotifs ?? true,
+            onChanged: (v) {
+              if (user != null) _updateNotificationPreference('emailNotifs', v, user.uid);
+            },
             activeThumbColor: AppColors.primary,
           ),
           _SectionHeader(title: 'Appearance'),

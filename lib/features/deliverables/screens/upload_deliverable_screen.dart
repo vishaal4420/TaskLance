@@ -11,7 +11,9 @@ import '../../../core/utils/validators.dart';
 import '../../../models/milestone.dart';
 import '../../milestones/providers/milestone_providers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:io';
 
 class UploadDeliverableScreen extends ConsumerStatefulWidget {
   final String projectId;
@@ -29,6 +31,7 @@ class _UploadDeliverableScreenState
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   String? _fileName;
+  String? _filePath;
   MilestoneModel? _selectedMilestone;
   bool _submitForReview = true;
   bool _loading = false;
@@ -52,15 +55,30 @@ class _UploadDeliverableScreenState
       _progress = 0;
     });
     
-    // Simulate upload delay
-    for (var i = 1; i <= 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (!mounted) return;
-      setState(() => _progress = i / 10);
-    }
+    final deliverableId = const Uuid().v4();
 
     try {
-      final deliverableId = const Uuid().v4();
+      // Copy file to local app directory
+      final appDir = await getApplicationDocumentsDirectory();
+      final delivDir = Directory('${appDir.path}/deliverables/${widget.projectId}');
+      if (!await delivDir.exists()) {
+        await delivDir.create(recursive: true);
+      }
+      
+      final newPath = '${delivDir.path}/${DateTime.now().millisecondsSinceEpoch}_$_fileName';
+      
+      // Simulate progress for UI
+      if (mounted) {
+        setState(() => _progress = 0.5);
+      }
+      
+      await File(_filePath!).copy(newPath);
+      
+      if (mounted) {
+        setState(() => _progress = 1.0);
+      }
+      
+      final downloadUrl = newPath;
       
       final deliverableData = {
         'id': deliverableId,
@@ -70,6 +88,7 @@ class _UploadDeliverableScreenState
         'title': _titleCtrl.text.trim(),
         'description': _descCtrl.text.trim(),
         'fileName': _fileName,
+        'fileUrl': downloadUrl,
         'status': _submitForReview ? 'review' : 'draft',
         'createdAt': FieldValue.serverTimestamp(),
       };
@@ -101,6 +120,7 @@ class _UploadDeliverableScreenState
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final milestonesAsync = ref.watch(projectMilestonesProvider(widget.projectId));
@@ -117,8 +137,11 @@ class _UploadDeliverableScreenState
             GestureDetector(
               onTap: () async {
                 final result = await FilePicker.platform.pickFiles();
-                if (result != null) {
-                  setState(() => _fileName = result.files.single.name);
+                if (result != null && result.files.isNotEmpty) {
+                  setState(() {
+                    _fileName = result.files.single.name;
+                    _filePath = result.files.single.path;
+                  });
                 }
               },
               child: Container(

@@ -7,7 +7,6 @@ import '../../../core/widgets/shimmer_widgets.dart';
 import '../../../core/widgets/empty_error_states.dart';
 import '../../../core/widgets/avatar_widget.dart';
 import '../../../data/seed_data.dart';
-import '../../../models/message.dart';
 import '../../../models/user.dart';
 import '../../auth/providers/auth_providers.dart';
 

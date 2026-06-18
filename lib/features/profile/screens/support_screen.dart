@@ -22,13 +22,7 @@ class SupportScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
-          _SupportTile(
-            icon: Icons.chat_bubble_outline,
-            title: 'Chat with us',
-            subtitle: 'Get real-time support from our team',
-            onTap: () => context.push('/profile/support/chat'),
-          ),
-          const SizedBox(height: 12),
+
           _SupportTile(
             icon: Icons.article_outlined,
             title: 'FAQs',
@@ -39,11 +33,11 @@ class SupportScreen extends StatelessWidget {
           _SupportTile(
             icon: Icons.email_outlined,
             title: 'Email Support',
-            subtitle: 'support@tasklance.app',
+            subtitle: 'support@tasklance.com',
             onTap: () async {
               final Uri emailLaunchUri = Uri(
                 scheme: 'mailto',
-                path: 'support@tasklance.app',
+                path: 'support@tasklance.com',
                 queryParameters: {
                   'subject': 'TaskLance Support Request'
                 },

@@ -45,7 +45,19 @@ class _InvoicesListScreenState extends ConsumerState<InvoicesListScreen> {
               label: Text('New Invoice', style: AppTextStyles.labelLarge.copyWith(color: Colors.white)),
             )
           : null,
-      appBar: AppBar(title: const Text('Invoices')),
+      appBar: AppBar(
+        title: const Text('Invoices'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
+          },
+        ),
+      ),
       body: Column(
         children: [
           // Summary strip

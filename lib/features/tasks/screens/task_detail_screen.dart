@@ -53,8 +53,26 @@ class TaskDetailScreen extends ConsumerWidget {
                 onPressed: () => context.push('/time-tracker/$taskId'),
               ),
               IconButton(
+                tooltip: 'Edit Task',
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: () { context.push('/tasks/create'); },
+              ),
+              IconButton(
+                tooltip: 'Delete Task',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Delete Task'),
+                      content: const Text('Are you sure you want to delete this task?'),
+                      actions: [
+                        TextButton(onPressed: () => context.pop(), child: const Text('Cancel')),
+                        TextButton(onPressed: () { context.pop(); context.pop(); }, child: const Text('Confirm')),
+                      ],
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -124,7 +142,26 @@ class TaskDetailScreen extends ConsumerWidget {
                     _InfoTile(
                       label: 'Assignee',
                       child: task.assigneeName == null
-                          ? const Text('Unassigned')
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('Unassigned'),
+                                Flexible(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      showDialog(context: context, builder: (_) => AlertDialog(title: const Text('Assign Task'), content: const Text('Assign this task to a freelancer.'), actions: [TextButton(onPressed: () => context.pop(), child: const Text('Close'))]));
+                                    },
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(0, 20),
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: const Text('Assign Task', style: TextStyle(fontSize: 10)),
+                                  ),
+                                ),
+                              ],
+                            )
                           : Row(children: [
                               AvatarWidget(name: task.assigneeName!, size: 22),
                               const SizedBox(width: 4),
@@ -194,6 +231,34 @@ class TaskDetailScreen extends ConsumerWidget {
                       }).toList(),
                     ),
                   ),
+                const SizedBox(height: 16),
+                // Attachments
+                _SectionCard(
+                  title: 'Attachments',
+                  child: Center(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        showDialog(context: context, builder: (_) => AlertDialog(title: const Text('Add Attachment'), actions: [TextButton(onPressed: () => context.pop(), child: const Text('Close'))]));
+                      },
+                      icon: const Icon(Icons.attach_file),
+                      label: const Text('Add Attachment'),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Comments
+                _SectionCard(
+                  title: 'Comments',
+                  child: Center(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        showDialog(context: context, builder: (_) => AlertDialog(title: const Text('Add Comment'), actions: [TextButton(onPressed: () => context.pop(), child: const Text('Close'))]));
+                      },
+                      icon: const Icon(Icons.comment_outlined),
+                      label: const Text('Add Comment'),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 40),
               ],
             ),

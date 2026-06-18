@@ -7,7 +7,6 @@ import '../../../core/widgets/empty_error_states.dart';
 import '../../../core/widgets/shimmer_widgets.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uuid/uuid.dart';
 import '../../../models/milestone.dart';
 import '../providers/milestone_providers.dart';
 
@@ -180,8 +179,9 @@ class _MilestoneApprovalScreenState
                         children: deliverables.map((d) {
                           final name = d['fileName'] as String? ?? 'Unnamed file';
                           String type = 'doc';
-                          if (name.toLowerCase().endsWith('.pdf')) type = 'pdf';
-                          else if (name.toLowerCase().endsWith('.png') || name.toLowerCase().endsWith('.jpg')) type = 'image';
+                          if (name.toLowerCase().endsWith('.pdf')) {
+                            type = 'pdf';
+                          } else if (name.toLowerCase().endsWith('.png') || name.toLowerCase().endsWith('.jpg')) type = 'image';
                           else if (name.toLowerCase().endsWith('.fig')) type = 'fig';
                           else if (name.toLowerCase().endsWith('.mp4')) type = 'video';
                           

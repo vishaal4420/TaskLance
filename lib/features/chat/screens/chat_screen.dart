@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_snackbar.dart';
@@ -91,6 +93,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return '$h:$m';
   }
 
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentUser = ref.watch(currentUserProvider).valueOrNull;
@@ -118,12 +121,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     color: AppColors.secondary)),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.videocam_rounded),
-            onPressed: () => context.push('/chat/${widget.conversationId}/video-call'),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -207,8 +204,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                     onPressed: () async {
                       final result = await FilePicker.platform.pickFiles();
-                      if (result != null && context.mounted) {
-                        AppSnackBar.success(context, 'Attached: ${result.files.single.name}');
+                      if (result != null && result.files.isNotEmpty) {
+                        final file = result.files.single;
+                        if (file.path == null) return;
+                        
+                        try {
+                          final appDir = await getApplicationDocumentsDirectory();
+                          final chatDir = Directory('${appDir.path}/chat_attachments/${widget.conversationId}');
+                          if (!await chatDir.exists()) {
+                            await chatDir.create(recursive: true);
+                          }
+                          
+                          final newPath = '${chatDir.path}/${DateTime.now().millisecondsSinceEpoch}_${file.name}';
+                          await File(file.path!).copy(newPath);
+                          final downloadUrl = newPath;
+                          
+                          _textCtrl.text = downloadUrl;
+                          _send();
+                          
+                          if (context.mounted) {
+                            AppSnackBar.success(context, 'File attached and sent!');
+                          }
+                        } catch (e) {
+                          if (context.mounted) {
+                            AppSnackBar.error(context, 'Failed to upload file: $e');
+                          }
+                        }
                       }
                     },
                   ),
@@ -298,15 +319,68 @@ class _MessageBubble extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Text(
-                    msg.content,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: isMe
-                          ? Colors.white
-                          : (isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight),
-                    ),
+                  child: Builder(
+                    builder: (context) {
+                      final isFile = msg.content.contains('chat_attachments');
+                      final lower = msg.content.toLowerCase();
+                      final isImage = isFile && (lower.endsWith('.jpg') || lower.endsWith('.png') || lower.endsWith('.jpeg'));
+
+                      if (isImage) {
+                        final isNetwork = msg.content.startsWith('http');
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: isNetwork 
+                            ? Image.network(
+                                msg.content,
+                                width: 200,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
+                              )
+                            : Image.file(
+                                File(msg.content),
+                                width: 200,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 50),
+                              ),
+                        );
+                      } else if (isFile) {
+                        // Extract filename by splitting by slashes and taking everything after the first underscore
+                        final rawName = msg.content.split(RegExp(r'[\\/]')).last;
+                        final parts = rawName.split('_');
+                        final fileName = parts.length > 1 ? parts.sublist(1).join('_') : rawName;
+                        
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.insert_drive_file, color: isMe ? Colors.white : AppColors.primary),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                fileName.isEmpty ? 'File' : fileName,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: isMe
+                                      ? Colors.white
+                                      : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Text(
+                        msg.content,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: isMe
+                              ? Colors.white
+                              : (isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight),
+                        ),
+                      );
+                    }
                   ),
                 ),
                 const SizedBox(height: 2),

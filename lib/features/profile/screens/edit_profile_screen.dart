@@ -1,9 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:path_provider/path_provider.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/app_snackbar.dart';
@@ -53,15 +54,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         final user = ref.read(currentUserProvider).valueOrNull;
         if (user == null) throw Exception('Not logged in');
 
-        // Instead of Firebase Storage, use a free placeholder URL based on a random string.
-        // We simulate a network delay for the UX.
-        await Future.delayed(const Duration(seconds: 1));
+        // Copy file to local app directory instead of Firebase Storage
+        final appDir = await getApplicationDocumentsDirectory();
+        final avatarsDir = Directory('${appDir.path}/avatars/${user.uid}');
+        if (!await avatarsDir.exists()) {
+          await avatarsDir.create(recursive: true);
+        }
         
-        final randomString = DateTime.now().millisecondsSinceEpoch.toString();
-        final downloadUrl = 'https://api.dicebear.com/7.x/avataaars/png?seed=$randomString';
+        final newPath = '${avatarsDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        await File(file.path!).copy(newPath);
         
         setState(() {
-          _avatarUrl = downloadUrl;
+          _avatarUrl = newPath;
         });
 
         if (mounted) {

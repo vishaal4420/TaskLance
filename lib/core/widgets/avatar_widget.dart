@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
@@ -47,7 +48,9 @@ class AvatarWidget extends StatelessWidget {
     if (url != null && url!.isNotEmpty) {
       avatar = CircleAvatar(
         radius: size / 2,
-        backgroundImage: NetworkImage(url!),
+        backgroundImage: (url!.startsWith('http') || url!.startsWith('https')) 
+            ? NetworkImage(url!) as ImageProvider 
+            : FileImage(File(url!)),
         backgroundColor: _bgColor,
       );
     } else {

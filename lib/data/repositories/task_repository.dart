@@ -16,7 +16,11 @@ class TaskRepository extends BaseRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => TaskModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return TaskModel.fromJson(data);
+          })
           .toList();
     });
   }
@@ -28,7 +32,11 @@ class TaskRepository extends BaseRepository {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => TaskModel.fromJson(doc.data()))
+          .map((doc) {
+            final data = Map<String, dynamic>.from(doc.data());
+            data['id'] = doc.id;
+            return TaskModel.fromJson(data);
+          })
           .toList();
     });
   }

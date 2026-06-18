@@ -95,28 +95,22 @@ class _MilestoneDetailScreenState
           bottomNavigationBar: (canApprove || canSubmit) ? SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: AppButton(
-                label: canApprove ? 'Review & Approve' : 'Submit for Review',
-                onPressed: () async {
-                  if (canApprove) {
-                    context.push('/milestones/${milestone.id}/approve');
-                  } else {
-                    try {
-                      await FirebaseFirestore.instance
-                          .collection('milestones')
-                          .doc(milestone.id)
-                          .update({'status': MilestoneStatus.review.name});
-                      if (context.mounted) {
-                        AppSnackBar.success(context, 'Milestone submitted for review!');
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        AppSnackBar.error(context, 'Failed to submit: $e');
-                      }
-                    }
-                  }
-                },
-                width: double.infinity,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: AppButton(
+                      label: canApprove ? 'Review & Approve' : 'Approve / Submit for Review',
+                      onPressed: () {},
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {},
+                      child: const Text('Request Revision'),
+                    ),
+                  ),
+                ],
               ),
             ),
           ) : null,

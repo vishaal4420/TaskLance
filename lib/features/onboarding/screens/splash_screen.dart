@@ -29,7 +29,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // Intro animations (logo popping in, text sliding up)
     _introCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 600), // Sped up from 1200ms
     );
 
     _scaleAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
@@ -49,10 +49,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // Progress bar animation
     _progressCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 1000), // Sped up from 2500ms
     )..forward();
 
-    Future.delayed(const Duration(milliseconds: 2800), _navigate);
+    // Reduce artificial delay from 2.8s to 1.1s
+    Future.delayed(const Duration(milliseconds: 1100), _navigate);
   }
 
   void _navigate() {

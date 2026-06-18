@@ -73,7 +73,7 @@ class AuthNotifier extends AsyncNotifier<void> {
     }
   }
 
-  Future<void> signIn(String email, String password, UserRole role) async {
+  Future<void> signIn(String email, String password) async {
     state = const AsyncLoading();
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(

@@ -17,6 +17,7 @@ import '../../auth/providers/auth_providers.dart';
 import '../../../models/user.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/widgets/success_dialog.dart';
+import 'mock_payment_modal.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final String invoiceId;
@@ -73,31 +74,14 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   }
 
   void _openCheckout(InvoiceModel invoice) {
-    if (!kIsWeb && defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS) {
-      // Mock payment for unsupported platforms
-      AppSnackBar.success(context, 'Processing mock payment...');
-      Future.delayed(const Duration(seconds: 1), () {
+    MockPaymentModal.show(
+      context,
+      amount: invoice.total,
+      projectName: invoice.projectName,
+      onSuccess: () {
         if (mounted) _markAsPaid();
-      });
-      return;
-    }
-
-    var options = {
-      'key': 'rzp_test_1DP5mmOlF5G5ag',
-      'amount': (invoice.total * 100).toInt(), // amount in the smallest currency sub-unit
-      'name': 'TaskLance',
-      'description': invoice.projectName,
-      'prefill': {
-        'contact': '9876543210',
-        'email': 'test@razorpay.com'
-      }
-    };
-
-    try {
-      _razorpay.open(options);
-    } catch (e) {
-      AppSnackBar.error(context, 'Error opening checkout: $e');
-    }
+      },
+    );
   }
 
   @override
@@ -151,10 +135,12 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
             title: Text('Invoice #${invoice.invoiceNumber}'),
             actions: [
               IconButton(
+                tooltip: 'Download',
                 icon: const Icon(Icons.download_rounded),
                 onPressed: handleDownload,
               ),
               IconButton(
+                tooltip: 'Share',
                 icon: const Icon(Icons.share_rounded),
                 onPressed: handleShare,
               ),

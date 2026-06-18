@@ -4,6 +4,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
+
 class TaskLanceApp extends ConsumerWidget {
   const TaskLanceApp({super.key});
 
@@ -19,6 +20,10 @@ class TaskLanceApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: router,
+      builder: (context, child) {
+        if (child == null) return const SizedBox.shrink();
+        return child;
+      },
     );
   }
 }

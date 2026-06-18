@@ -61,7 +61,6 @@ import '../../features/profile/screens/support_chat_screen.dart';
 import '../../features/profile/screens/faq_screen.dart';
 import '../shell/main_shell.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);

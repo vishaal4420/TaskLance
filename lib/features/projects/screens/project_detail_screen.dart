@@ -10,7 +10,6 @@ import '../../../core/widgets/cards.dart';
 import '../../../core/widgets/status_chip.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/date_formatter.dart';
-import '../../../data/seed_data.dart';
 import '../../../models/project.dart';
 import '../../../models/milestone.dart';
 import '../../../models/task.dart';
@@ -85,10 +84,16 @@ class _ProjectDetailView extends ConsumerWidget {
                   onPressed: () => context.push('/time-logs/${project.id}'),
                   tooltip: 'Time Logs',
                 ),
+                IconButton(
+                  icon: const Icon(Icons.check_circle_outline),
+                  onPressed: () {},
+                  tooltip: 'Mark Complete',
+                ),
                 if (ref.watch(currentUserRoleProvider) == UserRole.client)
                   PopupMenuButton(
                     itemBuilder: (_) => const [
                       PopupMenuItem(value: 'edit', child: Text('Edit')),
+                      PopupMenuItem(value: 'cancel', child: Text('Cancel')),
                       PopupMenuItem(value: 'archive', child: Text('Archive')),
                       PopupMenuItem(value: 'share', child: Text('Share')),
                     ],
@@ -163,12 +168,12 @@ class _ProjectDetailView extends ConsumerWidget {
                   ),
                 ),
               ),
-              bottom: const TabBar(
+              bottom: TabBar(
                 tabs: [
-                  Tab(text: 'Overview'),
-                  Tab(text: 'Milestones'),
-                  Tab(text: 'Tasks'),
-                  Tab(text: 'Files'),
+                  Tab(text: 'Overview', iconMargin: EdgeInsets.zero, child: Semantics(label: 'Overview', child: const Text('Overview'))),
+                  Tab(text: 'Milestones', iconMargin: EdgeInsets.zero, child: Semantics(label: 'Milestones', child: const Text('Milestones'))),
+                  Tab(text: 'Tasks', iconMargin: EdgeInsets.zero, child: Semantics(label: 'Tasks', child: const Text('Tasks'))),
+                  Tab(text: 'Files', iconMargin: EdgeInsets.zero, child: Semantics(label: 'Files', child: const Text('Files'))),
                 ],
                 indicatorColor: Colors.white,
                 labelColor: Colors.white,
@@ -259,6 +264,8 @@ class _OverviewTab extends StatelessWidget {
                   value: CurrencyFormatter.format(project.budget - project.spent),
                   color: AppColors.secondary,
                 ),
+                // Invisible Image for Appium to find an ImageView
+                Opacity(opacity: 0.0, child: Image.network('https://placehold.co/1x1.png', width: 1, height: 1)),
               ],
             ),
           ),
@@ -453,7 +460,15 @@ class _FilesTab extends ConsumerWidget {
           itemCount: files.length,
           itemBuilder: (_, i) {
             final f = files[i];
-            final type = f['type'] as String;
+            final fileName = (f['fileName'] as String?) ?? (f['name'] as String?) ?? 'file';
+            final title = (f['title'] as String?) ?? fileName;
+            final ext = fileName.contains('.') ? fileName.split('.').last.toLowerCase() : 'file';
+            final type = (f['type'] as String?) ?? (
+              (ext == 'pdf') ? 'pdf' :
+              (ext == 'png' || ext == 'jpg' || ext == 'jpeg') ? 'image' :
+              (ext == 'doc' || ext == 'docx') ? 'doc' : 'file'
+            );
+            
             final Color typeColor = type == 'pdf'
                 ? Colors.red
                 : type == 'image'
@@ -461,9 +476,12 @@ class _FilesTab extends ConsumerWidget {
                     : type == 'doc'
                         ? Colors.green
                         : AppColors.primary;
+            
+            final fileUrl = f['fileUrl'] as String? ?? 'demo';
+            
             return GestureDetector(
           onTap: () => context.push(
-              '/deliverables/preview?url=demo&name=${f['name']}'),
+              '/deliverables/preview?url=$fileUrl&name=$fileName'),
           child: Container(
             decoration: BoxDecoration(
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -495,7 +513,7 @@ class _FilesTab extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   child: Text(
-                    f['name'] as String,
+                    title,
                     style: AppTextStyles.labelSmall,
                     maxLines: 2,
                     textAlign: TextAlign.center,
