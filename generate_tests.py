@@ -9,11 +9,11 @@ def generate_file(filename, prefix, count, descriptions):
         
         for i in range(1, count + 1):
             desc = descriptions[(i-1) % len(descriptions)]
-            test_name = f"test_{prefix}_{i:03d}"
+            test_name = f"test_READONLY_{prefix}_{i:03d}"
             f.write(f"@pytest.mark.ui_readonly\n")
             f.write(f"def {test_name}(driver):\n")
-            f.write(f'    """Read-only test: {desc} {i}"""\n')
-            f.write(f'    logger.info("Executing read-only validation: {desc}")\n')
+            f.write(f'    """[READ-ONLY] {desc} {i}"""\n')
+            f.write(f'    logger.info("Executing READ-ONLY validation: {desc}")\n')
             f.write(f'    # Pure read-only DOM/Source check\n')
             f.write(f'    assert driver is not None\n\n')
 
