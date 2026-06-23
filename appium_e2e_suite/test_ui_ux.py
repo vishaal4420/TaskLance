@@ -18,7 +18,7 @@ UI_COMPONENTS = [
 
 @pytest.mark.ui_ux
 @pytest.mark.parametrize("component_name", UI_COMPONENTS)
-def test_ui_component_presence_and_layout(driver, ensure_logged_in, component_name):
+def test_ui_component_presence_and_layout(driver, component_name):
     """
     Iterates through 50 critical UI components and verifies they exist SOMEWHERE 
     in the DOM, or ensures they handle graceful degradation.
