@@ -27,6 +27,11 @@ jobs:
 
       # Note: We assume the self-hosted runner already has an active Appium server running 
       # and the Android Emulator/Device connected. If not, add steps to start them here.
+      - name: Build Flutter APK
+        run: |
+          flutter pub get
+          flutter build apk --debug
+
       - name: Run Appium E2E Test Suite
         run: |
           pytest appium_e2e_suite/ --excelreport=TaskLance_Test_Report.xlsx
