@@ -27,6 +27,11 @@ jobs:
 
       # Note: We assume the self-hosted runner already has an active Appium server running 
       # and the Android Emulator/Device connected. If not, add steps to start them here.
+      - name: Restore Secret Files
+        run: |
+          Copy-Item "D:\TaskLance\android\app\google-services.json" -Destination "android\app\google-services.json" -Force
+          Copy-Item "D:\TaskLance\.env" -Destination ".env" -Force
+
       - name: Build Flutter APK
         run: |
           flutter pub get
