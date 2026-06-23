@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-excel Appium-Python-Client selenium
+          pip install pytest pytest-excel Appium-Python-Client selenium pandas openpyxl
 
       # Note: We assume the self-hosted runner already has an active Appium server running 
       # and the Android Emulator/Device connected. If not, add steps to start them here.
