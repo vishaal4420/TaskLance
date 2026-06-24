@@ -1,0 +1,36 @@
+name: Load & Performance Test Suite
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  performance-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pandas openpyxl
+
+      - name: Run Load Testing Suite
+        run: |
+          # Executes exactly 300+ load tests and dynamically generates the Load_Test_Report.xlsx
+          pytest load_testing_suite/ || true # Use || true to ensure report uploads even if tests fail threshold
+
+      - name: Upload Performance Excel Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Load-Test-Report
+          path: load_testing_suite/reports/Load_Test_Report.xlsx

@@ -35,7 +35,7 @@ class ClientDashboardScreen extends ConsumerWidget {
         child: CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: 120,
+                expandedHeight: 160,
                 floating: true,
                 snap: true,
                 actions: [
@@ -74,33 +74,37 @@ class ClientDashboardScreen extends ConsumerWidget {
                         end: Alignment.bottomRight,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Client Portal 🏢',
-                                style: AppTextStyles.headlineMedium
-                                    .copyWith(color: Colors.white),
-                              ),
-                              Text(
-                                user.companyName ?? '',
-                                style: AppTextStyles.bodySmall
-                                    .copyWith(color: Colors.white.withOpacity(0.85)),
-                              ),
-                            ],
+                    child: SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      reverse: true, // Keep content at the bottom when shrinking
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Client Portal 🏢',
+                                  style: AppTextStyles.headlineMedium
+                                      .copyWith(color: Colors.white),
+                                ),
+                                Text(
+                                  user.companyName ?? '',
+                                  style: AppTextStyles.bodySmall
+                                      .copyWith(color: Colors.white.withOpacity(0.85)),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        AvatarWidget(
-                          url: user.avatarUrl,
-                          name: user.name,
-                          size: 44,
-                          onTap: () => context.push('/profile'),
-                        ),
-                      ],
+                          AvatarWidget(
+                            url: user.avatarUrl,
+                            name: user.name,
+                            size: 44,
+                            onTap: () => context.push('/profile'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -265,9 +269,9 @@ class ClientDashboardScreen extends ConsumerWidget {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: _QuickActionButton(
-                                    icon: Icons.bar_chart_rounded,
-                                    label: 'Reports',
-                                    onTap: () => context.push('/analytics'),
+                                    icon: Icons.account_balance_wallet_rounded,
+                                    label: 'Wallet',
+                                    onTap: () => context.push('/wallet'),
                                   ),
                                 ),
                               ],

@@ -28,7 +28,7 @@ final teamMembersProvider = StreamProvider.autoDispose<List<UserModel>>((ref) as
       .collection('users')
       .where('uid', whereIn: chunk)
       .snapshots()
-      .map((snapshot) => snapshot.docs.map((doc) => UserModel.fromJson(doc.data())).toList());
+      .map((snapshot) => snapshot.docs.map((doc) => UserModel.fromJson(doc.data(), doc.id)).toList());
 });
 
 class TeamScreen extends ConsumerStatefulWidget {
@@ -86,7 +86,7 @@ class _TeamScreenState extends ConsumerState<TeamScreen> {
                             return;
                           }
 
-                          final newMember = UserModel.fromJson(query.docs.first.data());
+                          final newMember = UserModel.fromJson(query.docs.first.data(), query.docs.first.id);
                           final currentUser = ref.read(currentUserProvider).valueOrNull;
                           if (currentUser == null) throw Exception('Not logged in');
 

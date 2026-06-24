@@ -4,6 +4,17 @@ import '../../../models/invoice.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../../models/user.dart';
 
+final projectInvoicesProvider = StreamProvider.autoDispose.family<List<InvoiceModel>, String>((ref, projectId) {
+  return FirebaseFirestore.instance
+      .collection('invoices')
+      .where('projectId', isEqualTo: projectId)
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) => InvoiceModel.fromJson({...doc.data(), 'id': doc.id})).toList();
+  });
+});
+
 // Stream for a single invoice
 final invoiceDetailProvider = StreamProvider.family<InvoiceModel?, String>((ref, id) {
   return FirebaseFirestore.instance.collection('invoices').doc(id).snapshots().map((doc) {

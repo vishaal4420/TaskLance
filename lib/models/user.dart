@@ -9,6 +9,8 @@ class UserModel {
   final String? avatarUrl;
   final String? bio;
   final String? tagline;
+  final String? location;
+  final String? languages;
   final UserRole role;
   final List<String> skills;
   final double? hourlyRate;
@@ -36,6 +38,8 @@ class UserModel {
     this.avatarUrl,
     this.bio,
     this.tagline,
+    this.location,
+    this.languages,
     required this.role,
     this.skills = const [],
     this.hourlyRate,
@@ -57,13 +61,15 @@ class UserModel {
     this.teamMemberUids = const [],
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        uid: json['uid'] as String,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        avatarUrl: json['avatarUrl'] as String?,
+  factory UserModel.fromJson(Map<String, dynamic> json, [String? docId]) => UserModel(
+        uid: (json['uid'] as String?) ?? docId ?? '',
+        name: (json['name'] as String?) ?? 'Unknown',
+        email: (json['email'] as String?) ?? '',
+        avatarUrl: (json['avatarUrl'] as String?) ?? (json['avatar'] as String?),
         bio: json['bio'] as String?,
         tagline: json['tagline'] as String?,
+        location: json['location'] as String?,
+        languages: json['languages'] as String?,
         role: json['role'] == 'client' ? UserRole.client : UserRole.freelancer,
         skills: List<String>.from(json['skills'] ?? []),
         hourlyRate: (json['hourlyRate'] as num?)?.toDouble(),
@@ -83,7 +89,11 @@ class UserModel {
         marketingNotifs: json['marketingNotifs'] as bool? ?? false,
         createdAt: json['createdAt'] is Timestamp
             ? (json['createdAt'] as Timestamp).toDate()
-            : DateTime.parse(json['createdAt'] as String),
+            : (json['createdAt'] is int
+                ? DateTime.fromMillisecondsSinceEpoch(json['createdAt'] as int)
+                : (json['createdAt'] is String
+                    ? DateTime.parse(json['createdAt'] as String)
+                    : DateTime.now())),
         teamMemberUids: List<String>.from(json['teamMemberUids'] ?? []),
       );
 
@@ -94,6 +104,8 @@ class UserModel {
         if (avatarUrl != null) 'avatarUrl': avatarUrl,
         if (bio != null) 'bio': bio,
         if (tagline != null) 'tagline': tagline,
+        if (location != null) 'location': location,
+        if (languages != null) 'languages': languages,
         'role': role.name,
         'skills': skills,
         if (hourlyRate != null) 'hourlyRate': hourlyRate,
@@ -120,6 +132,8 @@ class UserModel {
     String? avatarUrl,
     String? bio,
     String? tagline,
+    String? location,
+    String? languages,
     List<String>? skills,
     double? hourlyRate,
     String? companyName,
@@ -139,6 +153,8 @@ class UserModel {
         avatarUrl: avatarUrl ?? this.avatarUrl,
         bio: bio ?? this.bio,
         tagline: tagline ?? this.tagline,
+        location: location ?? this.location,
+        languages: languages ?? this.languages,
         role: role,
         skills: skills ?? this.skills,
         hourlyRate: hourlyRate ?? this.hourlyRate,

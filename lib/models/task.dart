@@ -104,16 +104,37 @@ class TaskModel {
     required this.createdAt,
   });
 
+  static TaskStatus _parseStatus(dynamic val) {
+    if (val == null) return TaskStatus.todo;
+    final str = val.toString();
+    switch (str) {
+      case 'todo': return TaskStatus.todo;
+      case 'in-progress': return TaskStatus.inProgress;
+      case 'in-review': return TaskStatus.inReview;
+      case 'done': return TaskStatus.done;
+      // Fallback for old data
+      case 'inProgress': return TaskStatus.inProgress;
+      case 'inReview': return TaskStatus.inReview;
+      default: return TaskStatus.todo;
+    }
+  }
+
+  static String _statusToColumnId(TaskStatus status) {
+    switch (status) {
+      case TaskStatus.todo: return 'todo';
+      case TaskStatus.inProgress: return 'in-progress';
+      case TaskStatus.inReview: return 'in-review';
+      case TaskStatus.done: return 'done';
+    }
+  }
+
   factory TaskModel.fromJson(Map<String, dynamic> json) => TaskModel(
         id: json['id'] as String,
         projectId: json['projectId'] as String,
         milestoneId: json['milestoneId'] as String?,
         title: json['title'] as String,
         description: json['description'] as String? ?? '',
-        status: TaskStatus.values.firstWhere(
-          (e) => e.name == json['status'],
-          orElse: () => TaskStatus.todo,
-        ),
+        status: _parseStatus(json['columnId'] ?? json['status']),
         priority: TaskPriority.values.firstWhere(
           (e) => e.name == json['priority'],
           orElse: () => TaskPriority.medium,
@@ -146,7 +167,7 @@ class TaskModel {
         if (milestoneId != null) 'milestoneId': milestoneId,
         'title': title,
         'description': description,
-        'status': status.name,
+        'columnId': _statusToColumnId(status),
         'priority': priority.name,
         if (assigneeUid != null) 'assigneeUid': assigneeUid,
         if (assigneeName != null) 'assigneeName': assigneeName,

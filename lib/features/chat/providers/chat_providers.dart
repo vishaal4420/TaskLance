@@ -16,7 +16,7 @@ final inboxProvider = StreamProvider<List<ConversationModel>>((ref) async* {
       .where('participantUids', arrayContains: uid)
       .snapshots()
       .map((snapshot) {
-    final list = snapshot.docs.map((doc) => ConversationModel.fromJson(doc.data())).toList();
+    final list = snapshot.docs.map((doc) => ConversationModel.fromJson(doc.data(), doc.id)).toList();
     list.sort((a, b) => b.lastMessageAt.compareTo(a.lastMessageAt));
     return list;
   });
@@ -30,7 +30,7 @@ final chatMessagesProvider = StreamProvider.family<List<MessageModel>, String>((
       .orderBy('createdAt', descending: false)
       .snapshots()
       .map((snapshot) {
-    return snapshot.docs.map((doc) => MessageModel.fromJson(doc.data())).toList();
+    return snapshot.docs.map((doc) => MessageModel.fromJson(doc.data(), doc.id)).toList();
   });
 });
 
@@ -42,7 +42,7 @@ final contactsProvider = FutureProvider<List<UserModel>>((ref) async {
   // In a real app, this might only return connected freelancers/clients.
   final snapshot = await FirebaseFirestore.instance.collection('users').get();
   return snapshot.docs
-      .map((doc) => UserModel.fromJson(doc.data()))
+      .map((doc) => UserModel.fromJson(doc.data(), doc.id))
       .where((u) => u.uid != uid)
       .toList();
 });

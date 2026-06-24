@@ -81,13 +81,15 @@ class _AppTextFieldState extends State<AppTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label,
-          style: AppTextStyles.labelLarge.copyWith(
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+        if (widget.label.isNotEmpty) ...[
+          Text(
+            widget.label,
+            style: AppTextStyles.labelLarge.copyWith(
+              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
+          const SizedBox(height: 6),
+        ],
         TextFormField(
           controller: widget.controller,
           initialValue: widget.initialValue,

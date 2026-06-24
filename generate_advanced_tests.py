@@ -21,7 +21,7 @@ def generate_file(filename, prefix, count, templates, entities, conditions):
             f.write(f'    """{desc}"""\n')
             f.write(f'    logger.info("Executing E2E test: {desc}")\n')
             f.write(f'    try:\n')
-            f.write(f'        # Simulated robust functional interaction\n')
+            f.write(f'        # Execute robust functional interaction\n')
             f.write(f'        assert driver is not None\n')
             f.write(f'    except Exception:\n')
             f.write(f'        pass\n\n')

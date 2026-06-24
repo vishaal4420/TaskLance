@@ -23,7 +23,7 @@ final currentUserProvider = StreamProvider<UserModel?>((ref) async* {
   final repo = ref.watch(userRepositoryProvider);
   yield* repo.collection('users').doc(uid).snapshots().map((doc) {
     if (doc.exists && doc.data() != null) {
-      return UserModel.fromJson(doc.data()!);
+      return UserModel.fromJson(doc.data()!, doc.id);
     }
     return null;
   });

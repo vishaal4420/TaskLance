@@ -6,7 +6,6 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/shimmer_widgets.dart';
 import '../../../core/widgets/empty_error_states.dart';
 import '../../../core/widgets/avatar_widget.dart';
-import '../../../data/seed_data.dart';
 import '../../../models/user.dart';
 import '../../auth/providers/auth_providers.dart';
 
@@ -93,14 +92,12 @@ class _InboxListScreenState extends ConsumerState<InboxListScreen> {
                     final unread = conv.unreadCounts.values
                         .fold<int>(0, (s, v) => s + v);
                         
-                    final role = ref.watch(currentUserRoleProvider);
-                    final myName = role == UserRole.client 
-                        ? SeedData.currentClient.name 
-                        : SeedData.currentFreelancer.name;
+                    final user = ref.watch(currentUserProvider).valueOrNull;
+                    final myName = user?.name ?? '';
                         
                     final otherName = conv.participantNames
                         .where((n) => n != myName)
-                        .firstOrNull ?? conv.participantNames.first;
+                        .firstOrNull ?? conv.participantNames.firstOrNull ?? 'Unknown';
 
                     return Dismissible(
                       key: Key(conv.id),

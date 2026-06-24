@@ -8,6 +8,7 @@ class ProjectModel {
   final String id;
   final String title;
   final String description;
+  final String category;
   final String? freelancerUid;
   final String clientUid;
   final String? clientName;
@@ -21,12 +22,14 @@ class ProjectModel {
   final int completedMilestones;
   final int totalMilestones;
   final List<String> teamMemberUids;
+  final List<String> skills;
   final DateTime createdAt;
 
   const ProjectModel({
     required this.id,
     required this.title,
     required this.description,
+    this.category = 'General',
     this.freelancerUid,
     required this.clientUid,
     this.clientName,
@@ -40,6 +43,7 @@ class ProjectModel {
     this.completedMilestones = 0,
     this.totalMilestones = 0,
     this.teamMemberUids = const [],
+    this.skills = const [],
     required this.createdAt,
   });
 
@@ -52,6 +56,7 @@ class ProjectModel {
     String? id,
     String? title,
     String? description,
+    String? category,
     String? freelancerUid,
     String? clientUid,
     String? clientName,
@@ -65,12 +70,14 @@ class ProjectModel {
     int? completedMilestones,
     int? totalMilestones,
     List<String>? teamMemberUids,
+    List<String>? skills,
     DateTime? createdAt,
   }) {
     return ProjectModel(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      category: category ?? this.category,
       freelancerUid: freelancerUid ?? this.freelancerUid,
       clientUid: clientUid ?? this.clientUid,
       clientName: clientName ?? this.clientName,
@@ -84,6 +91,7 @@ class ProjectModel {
       completedMilestones: completedMilestones ?? this.completedMilestones,
       totalMilestones: totalMilestones ?? this.totalMilestones,
       teamMemberUids: teamMemberUids ?? this.teamMemberUids,
+      skills: skills ?? this.skills,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -92,6 +100,7 @@ class ProjectModel {
         id: json['id']?.toString() ?? '',
         title: json['title']?.toString() ?? 'Untitled Project',
         description: json['description']?.toString() ?? 'No description provided.',
+        category: json['category']?.toString() ?? 'General',
         freelancerUid: json['freelancerUid']?.toString(),
         clientUid: json['clientUid']?.toString() ?? '',
         clientName: json['clientName']?.toString(),
@@ -113,6 +122,10 @@ class ProjectModel {
                 ?.map((e) => e.toString())
                 .toList() ??
             [],
+        skills: (json['skills'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
         createdAt: _parseDate(json['createdAt']),
       );
 
@@ -127,6 +140,7 @@ class ProjectModel {
         'id': id,
         'title': title,
         'description': description,
+        'category': category,
         if (freelancerUid != null) 'freelancerUid': freelancerUid,
         'clientUid': clientUid,
         if (clientName != null) 'clientName': clientName,
@@ -140,6 +154,7 @@ class ProjectModel {
         'completedMilestones': completedMilestones,
         'totalMilestones': totalMilestones,
         'teamMemberUids': teamMemberUids,
+        'skills': skills,
         'createdAt': createdAt.toIso8601String(),
       };
 }

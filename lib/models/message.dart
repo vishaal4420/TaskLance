@@ -29,13 +29,13 @@ class MessageModel {
     required this.createdAt,
   });
 
-  factory MessageModel.fromJson(Map<String, dynamic> json) => MessageModel(
-        id: json['id'] as String,
-        conversationId: json['conversationId'] as String,
-        senderUid: json['senderUid'] as String,
-        senderName: json['senderName'] as String,
+  factory MessageModel.fromJson(Map<String, dynamic> json, [String? docId]) => MessageModel(
+        id: (json['id'] as String?) ?? docId ?? '',
+        conversationId: json['conversationId'] as String? ?? '',
+        senderUid: (json['senderUid'] as String?) ?? (json['senderId'] as String?) ?? '',
+        senderName: json['senderName'] as String? ?? 'Unknown',
         senderAvatarUrl: json['senderAvatarUrl'] as String?,
-        content: json['content'] as String,
+        content: (json['content'] as String?) ?? (json['text'] as String?) ?? '',
         type: MessageType.values.firstWhere(
           (e) => e.name == json['type'],
           orElse: () => MessageType.text,
@@ -43,9 +43,13 @@ class MessageModel {
         fileUrl: json['fileUrl'] as String?,
         fileName: json['fileName'] as String?,
         isRead: json['isRead'] as bool? ?? false,
-        createdAt: json['createdAt'] is Timestamp
-            ? (json['createdAt'] as Timestamp).toDate()
-            : DateTime.parse(json['createdAt'] as String),
+        createdAt: (json['createdAt'] ?? json['timestamp']) is Timestamp
+            ? ((json['createdAt'] ?? json['timestamp']) as Timestamp).toDate()
+            : ((json['createdAt'] ?? json['timestamp']) is int
+                ? DateTime.fromMillisecondsSinceEpoch((json['createdAt'] ?? json['timestamp']) as int)
+                : ((json['createdAt'] ?? json['timestamp']) is String
+                    ? DateTime.parse((json['createdAt'] ?? json['timestamp']) as String)
+                    : DateTime.now())),
       );
 
   Map<String, dynamic> toJson() => {
@@ -88,17 +92,27 @@ class ConversationModel {
     this.groupName,
   });
 
-  factory ConversationModel.fromJson(Map<String, dynamic> json) =>
+  factory ConversationModel.fromJson(Map<String, dynamic> json, [String? docId]) =>
       ConversationModel(
-        id: json['id'] as String,
-        participantUids: List<String>.from(json['participantUids']),
+        id: (json['id'] as String?) ?? docId ?? '',
+        participantUids: List<String>.from(json['participantUids'] ?? json['participants'] ?? []),
         participantNames: List<String>.from(json['participantNames'] ?? []),
         projectId: json['projectId'] as String?,
         projectName: json['projectName'] as String?,
         lastMessage: json['lastMessage'] as String? ?? '',
-        lastMessageAt: json['lastMessageAt'] is Timestamp
-            ? (json['lastMessageAt'] as Timestamp).toDate()
-            : DateTime.parse(json['lastMessageAt'] as String),
+        lastMessageAt: json['lastMessageAt'] != null
+            ? (json['lastMessageAt'] is Timestamp
+                ? (json['lastMessageAt'] as Timestamp).toDate()
+                : (json['lastMessageAt'] is int
+                    ? DateTime.fromMillisecondsSinceEpoch(json['lastMessageAt'] as int)
+                    : (json['lastMessageAt'] is String
+                        ? DateTime.parse(json['lastMessageAt'] as String)
+                        : DateTime.now())))
+            : (json['updatedAt'] != null
+                ? (json['updatedAt'] is int
+                    ? DateTime.fromMillisecondsSinceEpoch(json['updatedAt'] as int)
+                    : DateTime.now())
+                : DateTime.now()),
         unreadCounts: Map<String, int>.from(json['unreadCounts'] ?? {}),
         isGroup: json['isGroup'] as bool? ?? false,
         groupName: json['groupName'] as String?,

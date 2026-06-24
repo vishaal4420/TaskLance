@@ -4,7 +4,7 @@ import '../models/milestone.dart';
 import '../models/task.dart';
 import '../models/invoice.dart';
 import '../models/message.dart';
-import '../models/payment.dart';
+import '../models/transaction.dart';
 import '../models/notification_model.dart';
 
 class SeedData {
@@ -20,6 +20,8 @@ class SeedData {
       bio:
           'Full-stack developer specializing in Flutter and Node.js with 5+ years of experience building scalable web and mobile apps.',
       tagline: 'Flutter & Node.js Developer',
+      location: 'San Francisco, CA',
+      languages: 'English, Spanish',
       role: UserRole.freelancer,
       skills: ['Flutter', 'Dart', 'Node.js', 'Firebase', 'PostgreSQL', 'REST APIs'],
       hourlyRate: 85,
@@ -42,6 +44,8 @@ class SeedData {
       bio:
           'Product manager at TechCorp Inc. building the next generation of enterprise tools.',
       tagline: 'Product Manager @ TechCorp',
+      location: 'New York, NY',
+      languages: 'English',
       role: UserRole.client,
       companyName: 'TechCorp Inc.',
       industry: 'Technology',
@@ -61,6 +65,8 @@ class SeedData {
       bio:
           'Founder and CEO of StartupVentures, building tools for early-stage founders.',
       tagline: 'Founder @ StartupVentures',
+      location: 'Austin, TX',
+      languages: 'English',
       role: UserRole.client,
       companyName: 'StartupVentures',
       industry: 'Venture Capital',
@@ -84,6 +90,7 @@ class SeedData {
       title: 'TechCorp Mobile App Redesign',
       description:
           'Complete redesign of the TechCorp iOS and Android mobile application, implementing new design system, improved UX flows, and performance optimizations.',
+      category: 'Mobile App',
       freelancerUid: 'seed_freelancer_001',
       clientUid: 'seed_client_001',
       clientName: 'Sarah Chen',
@@ -103,6 +110,7 @@ class SeedData {
       title: 'StartupVentures Dashboard',
       description:
           'Analytics and portfolio management dashboard for tracking startup investments, metrics, and communication with founders.',
+      category: 'Web Development',
       freelancerUid: 'seed_freelancer_001',
       clientUid: 'seed_client_002',
       clientName: 'Marcus Johnson',
@@ -122,6 +130,7 @@ class SeedData {
       title: 'E-Commerce Platform Integration',
       description:
           'Stripe payment integration, inventory management system, and automated email notifications for the TechCorp e-commerce platform.',
+      category: 'E-Commerce',
       freelancerUid: 'seed_freelancer_001',
       clientUid: 'seed_client_001',
       clientName: 'Sarah Chen',
@@ -141,6 +150,7 @@ class SeedData {
       title: 'Looking for a Flutter Developer',
       description:
           'We need a skilled Flutter developer to build a new social networking app from scratch. Must have experience with Firebase and real-time messaging.',
+      category: 'Mobile App',
       clientUid: 'seed_client_002',
       clientName: 'Marcus Johnson',
       status: ProjectStatus.open,
@@ -599,47 +609,44 @@ class SeedData {
     ),
   ];
 
-  // ─── Payments ─────────────────────────────────────────────────────────────
-  static final List<PaymentModel> payments = [
-    PaymentModel(
+  // ─── Transactions ───────────────────────────────────────────────────────────
+  static final List<TransactionModel> transactions = [
+    TransactionModel(
       id: 'seed_pay_001',
       invoiceId: 'seed_inv_001',
       invoiceNumber: 'INV-2026-001',
       projectId: 'seed_project_001',
       projectName: 'TechCorp Mobile App Redesign',
-      payerUid: 'seed_client_001',
-      recipientUid: 'seed_freelancer_001',
+      userId: 'seed_freelancer_001',
       amount: 1500,
-      status: PaymentStatus.completed,
-      method: PaymentMethod.card,
+      status: TransactionStatus.completed,
+      method: TransactionMethod.card,
       stripePaymentIntentId: 'pi_seed_001',
       createdAt: DateTime(2026, 4, 5),
     ),
-    PaymentModel(
+    TransactionModel(
       id: 'seed_pay_002',
       invoiceId: 'seed_inv_002',
       invoiceNumber: 'INV-2026-002',
       projectId: 'seed_project_001',
       projectName: 'TechCorp Mobile App Redesign',
-      payerUid: 'seed_client_001',
-      recipientUid: 'seed_freelancer_001',
+      userId: 'seed_freelancer_001',
       amount: 2000,
-      status: PaymentStatus.completed,
-      method: PaymentMethod.card,
+      status: TransactionStatus.completed,
+      method: TransactionMethod.card,
       stripePaymentIntentId: 'pi_seed_002',
       createdAt: DateTime(2026, 5, 6),
     ),
-    PaymentModel(
+    TransactionModel(
       id: 'seed_pay_003',
       invoiceId: 'seed_inv_004',
       invoiceNumber: 'INV-2026-004',
       projectId: 'seed_project_003',
       projectName: 'E-Commerce Platform Integration',
-      payerUid: 'seed_client_001',
-      recipientUid: 'seed_freelancer_001',
+      userId: 'seed_freelancer_001',
       amount: 3325,
-      status: PaymentStatus.completed,
-      method: PaymentMethod.bankTransfer,
+      status: TransactionStatus.completed,
+      method: TransactionMethod.bankTransfer,
       createdAt: DateTime(2026, 2, 12),
     ),
   ];
@@ -701,19 +708,20 @@ class SeedData {
   // ─── Analytics helpers ────────────────────────────────────────────────────
   static double get totalEarningsThisMonth {
     final now = DateTime.now();
-    return payments
+    return transactions
         .where(
           (p) =>
-              p.status == PaymentStatus.completed &&
+              p.status == TransactionStatus.completed &&
               p.createdAt.month == now.month &&
-              p.createdAt.year == now.year,
+              p.createdAt.year == now.year &&
+              p.amount > 0, // only positive earnings
         )
         .fold(0, (sum, p) => sum + p.amount);
   }
 
   static double get totalEarningsAllTime {
-    return payments
-        .where((p) => p.status == PaymentStatus.completed)
+    return transactions
+        .where((p) => p.status == TransactionStatus.completed && p.amount > 0)
         .fold(0, (sum, p) => sum + p.amount);
   }
 
@@ -737,12 +745,13 @@ class SeedData {
     final now = DateTime.now();
     return List.generate(months, (i) {
       final month = DateTime(now.year, now.month - (months - 1 - i));
-      final total = payments
+      final total = transactions
           .where(
             (p) =>
-                p.status == PaymentStatus.completed &&
+                p.status == TransactionStatus.completed &&
                 p.createdAt.year == month.year &&
-                p.createdAt.month == month.month,
+                p.createdAt.month == month.month &&
+                p.amount > 0,
           )
           .fold<double>(0, (sum, p) => sum + p.amount);
       return {'month': month, 'amount': total};

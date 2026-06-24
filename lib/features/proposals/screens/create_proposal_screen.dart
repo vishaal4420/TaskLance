@@ -63,9 +63,11 @@ class _CreateProposalScreenState extends ConsumerState<CreateProposalScreen> {
         'id': proposalId,
         'projectId': widget.projectId,
         'freelancerUid': user.uid,
+        'freelancerId': user.uid, // For Web compatibility
         'freelancerName': user.name,
         'freelancerAvatarUrl': user.avatarUrl,
         'clientUid': clientUid,
+        'clientId': clientUid, // For Web compatibility
         'clientName': clientName,
         'bidAmount': budget,
         'coverLetter': scope,

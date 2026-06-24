@@ -13,7 +13,7 @@ import '../../../models/user.dart';
 final profileUserProvider = StreamProvider.family<UserModel?, String>((ref, uid) {
   return FirebaseFirestore.instance.collection('users').doc(uid).snapshots().map((doc) {
     if (doc.exists && doc.data() != null) {
-      return UserModel.fromJson(doc.data()!);
+      return UserModel.fromJson(doc.data()!, doc.id);
     }
     return null;
   });
@@ -34,6 +34,7 @@ class ProfileScreen extends ConsumerWidget {
     final userAsync = ref.watch(profileUserProvider(queryUid));
     
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     return Scaffold(
       body: userAsync.when(
@@ -106,79 +107,94 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       // Profile info
                       SafeArea(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 20),
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.2),
-                                border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                        child: SingleChildScrollView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(height: 20),
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.white.withOpacity(0.2),
+                                  border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                                ),
+                                child: AvatarWidget(name: user.name, url: user.avatarUrl, size: 100),
                               ),
-                              child: AvatarWidget(name: user.name, url: user.avatarUrl, size: 100),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              user.name,
-                              style: AppTextStyles.headlineMedium.copyWith(color: Colors.white),
-                            ),
-                            if (user.tagline != null) ...[
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 16),
                               Text(
-                                user.tagline!,
-                                style: AppTextStyles.bodyMedium.copyWith(color: Colors.white.withOpacity(0.9)),
+                                user.name,
+                                style: AppTextStyles.headlineMedium.copyWith(color: Colors.white),
                               ),
-                            ],
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.location_on, color: Colors.white, size: 14),
-                                const SizedBox(width: 4),
+                              if (user.tagline != null) ...[
+                                const SizedBox(height: 4),
                                 Text(
-                                  'Location: San Francisco, CA',
-                                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                                  user.tagline!,
+                                  style: AppTextStyles.bodyMedium.copyWith(color: Colors.white.withOpacity(0.9)),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.access_time, color: Colors.white, size: 14),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Timezone: PST',
-                                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                                  const Icon(Icons.location_on, color: Colors.white, size: 14),
                                   const SizedBox(width: 4),
                                   Text(
-                                    user.rating.toStringAsFixed(1),
-                                    style: AppTextStyles.titleSmall.copyWith(color: Colors.white),
-                                  ),
-                                  Text(
-                                    ' (${user.reviewCount})',
-                                    style: AppTextStyles.labelSmall.copyWith(color: Colors.white.withOpacity(0.7)),
+                                    user.location ?? 'Location not set',
+                                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.language, color: Colors.white, size: 14),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    user.languages ?? 'Languages not set',
+                                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.calendar_today, color: Colors.white, size: 14),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Joined ${months[user.createdAt.month - 1]} ${user.createdAt.year}',
+                                    style: AppTextStyles.bodySmall.copyWith(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      user.rating.toStringAsFixed(1),
+                                      style: AppTextStyles.titleSmall.copyWith(color: Colors.white),
+                                    ),
+                                    Text(
+                                      ' (${user.reviewCount})',
+                                      style: AppTextStyles.labelSmall.copyWith(color: Colors.white.withOpacity(0.7)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 enum InvoiceStatus { draft, sent, viewed, paid, overdue, voided }
 
 class InvoiceLineItem {
@@ -64,6 +66,13 @@ class InvoiceModel {
   double get discountAmount => subtotal * discountPercent / 100;
   double get total => subtotal + taxAmount - discountAmount;
 
+  static DateTime _parseDate(dynamic dateVal) {
+    if (dateVal == null) return DateTime.now();
+    if (dateVal is Timestamp) return dateVal.toDate();
+    if (dateVal is String) return DateTime.tryParse(dateVal) ?? DateTime.now();
+    return DateTime.now();
+  }
+
   factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
         id: json['id'] as String,
         invoiceNumber: json['invoiceNumber'] as String,
@@ -78,8 +87,8 @@ class InvoiceModel {
         taxPercent: (json['taxPercent'] as num?)?.toDouble() ?? 0,
         discountPercent: (json['discountPercent'] as num?)?.toDouble() ?? 0,
         notes: json['notes'] as String?,
-        dueDate: DateTime.parse(json['dueDate'] as String),
-        createdAt: DateTime.parse(json['createdAt'] as String),
+        dueDate: _parseDate(json['dueDate']),
+        createdAt: _parseDate(json['createdAt']),
         status: InvoiceStatus.values.firstWhere(
           (e) => e.name == json['status'],
           orElse: () => InvoiceStatus.draft,

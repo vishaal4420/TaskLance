@@ -163,7 +163,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           .copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                     ),
                     TextButton(
-                      onPressed: () => context.go('/signup'),
+                      onPressed: () => context.go('/role-select'),
                       child: const Text('Sign up'),
                     ),
                   ],

@@ -146,22 +146,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: isLast
-                        ? Column(
-                            key: const ValueKey('auth_buttons'),
-                            children: [
-                              AppButton(
-                                label: 'Get Started',
-                                onPressed: () => context.go('/signup'),
-                                width: double.infinity,
-                              ),
-                              const SizedBox(height: 16),
-                              AppButton(
-                                label: 'Log in',
-                                onPressed: () => context.go('/login'),
-                                variant: AppButtonVariant.secondary,
-                                width: double.infinity,
-                              ),
-                            ],
+                        ? AppButton(
+                            key: const ValueKey('continue_button'),
+                            label: 'Continue',
+                            onPressed: () => context.go('/role-select'),
+                            width: double.infinity,
                           )
                         : AppButton(
                             key: const ValueKey('next_button'),

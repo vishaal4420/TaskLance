@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_snackbar.dart';
@@ -94,6 +95,39 @@ class _ProposalDetailScreenState extends ConsumerState<ProposalDetailScreen> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      // Create Conversation
+      final convId = FirebaseFirestore.instance.collection('conversations').doc().id;
+      final convRef = FirebaseFirestore.instance.collection('conversations').doc(convId);
+      final initialMessage = "Hi! I just accepted your proposal for \"$projectName\". Let's get started!";
+      
+      batch.set(convRef, {
+        'id': convId,
+        'participantUids': [proposal['clientUid'], proposal['freelancerUid']],
+        'participantNames': [proposal['clientName'] ?? 'Client', proposal['freelancerName'] ?? 'Freelancer'],
+        'projectId': proposal['projectId'],
+        'projectName': projectName,
+        'lastMessage': initialMessage,
+        'lastMessageAt': FieldValue.serverTimestamp(),
+        'unreadCounts': {
+           proposal['freelancerUid']: 1,
+        },
+        'isGroup': false,
+      });
+
+      // Add initial message
+      final msgId = const Uuid().v4();
+      final msgRef = convRef.collection('messages').doc(msgId);
+      batch.set(msgRef, {
+        'id': msgId,
+        'conversationId': convId,
+        'senderUid': proposal['clientUid'],
+        'senderName': proposal['clientName'] ?? 'Client',
+        'content': initialMessage,
+        'type': 'text',
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
       await batch.commit();
 
       if (!mounted) return;
@@ -162,7 +196,7 @@ class _ProposalDetailScreenState extends ConsumerState<ProposalDetailScreen> {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () {
-                                  context.push('/chat/new-freelancer'); // mock chat route
+                                  context.push('/chat'); // Direct to Inbox
                                 },
                                 child: const Text('Message'),
                               ),

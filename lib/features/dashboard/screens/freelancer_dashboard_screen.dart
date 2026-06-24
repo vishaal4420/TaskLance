@@ -8,9 +8,11 @@ import '../../../core/utils/date_formatter.dart';
 import '../../../core/widgets/avatar_widget.dart';
 import '../../../core/widgets/milestone_card.dart';
 import '../../../core/widgets/shimmer_widgets.dart';
-import '../../../data/seed_data.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../providers/dashboard_providers.dart';
+import '../../projects/providers/project_providers.dart';
+import '../../payments/providers/wallet_providers.dart';
+import '../../payments/providers/invoice_providers.dart';
 import '../../../core/utils/seed_service.dart';
 import '../../../core/widgets/app_snackbar.dart';
 
@@ -32,11 +34,18 @@ class FreelancerDashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider).valueOrNull ?? SeedData.currentFreelancer;
+    final userAsync = ref.watch(currentUserProvider);
     final projectsAsync = ref.watch(dashboardProjectsProvider);
     final milestonesAsync = ref.watch(dashboardMilestonesProvider);
 
-    return Scaffold(
+    return userAsync.when(
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, _) => Scaffold(body: Center(child: Text('Error loading user: $e'))),
+      data: (user) {
+        if (user == null) {
+          return const Scaffold(body: Center(child: Text('User not found')));
+        }
+        return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/invoices/create'),
         backgroundColor: AppColors.primary,
@@ -154,7 +163,7 @@ class FreelancerDashboardScreen extends ConsumerWidget {
                                 child: _StatCard(
                                   label: 'Earned',
                                   value: CurrencyFormatter.formatCompact(
-                                      SeedData.totalEarned),
+                                      user.totalEarned),
                                   icon: Icons.account_balance_wallet_rounded,
                                   color: AppColors.secondary,
                                 ),
@@ -243,9 +252,9 @@ class FreelancerDashboardScreen extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _QuickActionButton(
-                            icon: Icons.bar_chart_rounded,
-                            label: 'Analytics',
-                            onTap: () => context.push('/analytics'),
+                            icon: Icons.account_balance_wallet_rounded,
+                            label: 'Wallet',
+                            onTap: () => context.push('/wallet'),
                           ),
                         ),
                       ],
@@ -261,6 +270,8 @@ class FreelancerDashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+      },
     );
   }
 }
@@ -336,37 +347,14 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ActivityFeed extends StatelessWidget {
-  static const _items = [
-    _ActivityItem(
-      icon: Icons.check_circle_rounded,
-      color: AppColors.secondary,
-      text: 'Milestone "Core Screens" approved by Sarah Chen',
-      time: '3 hours ago',
-    ),
-    _ActivityItem(
-      icon: Icons.payments_rounded,
-      color: AppColors.success,
-      text: 'Payment of \$4,070 received for INV-2026-002',
-      time: '5 hours ago',
-    ),
-    _ActivityItem(
-      icon: Icons.chat_bubble_rounded,
-      color: AppColors.primary,
-      text: 'New message from Sarah Chen',
-      time: '2 hours ago',
-    ),
-    _ActivityItem(
-      icon: Icons.schedule_rounded,
-      color: AppColors.warning,
-      text: 'Milestone "API Integration" due in 4 days',
-      time: '1 day ago',
-    ),
-  ];
+class _ActivityFeed extends ConsumerWidget {
+  const _ActivityFeed();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final transactionsAsync = ref.watch(walletTransactionsProvider);
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -375,12 +363,48 @@ class _ActivityFeed extends StatelessWidget {
           color: isDark ? AppColors.borderDark : AppColors.borderLight,
         ),
       ),
-      child: Column(
-        children: _items
-            .map((item) => _ActivityTile(item: item))
-            .toList(),
+      child: transactionsAsync.when(
+        loading: () => const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+        error: (e, _) => Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text('Error loading activity: $e'),
+        ),
+        data: (transactions) {
+          final deposits = transactions.where((t) => t.amount > 0).toList();
+          
+          if (deposits.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text('No recent activity.'),
+            );
+          }
+
+          final items = deposits.take(5).map((p) {
+            return _ActivityItem(
+              icon: Icons.payments_rounded,
+              color: AppColors.success,
+              text: 'Deposit of \$${p.amount} received for ${p.invoiceNumber ?? 'Invoice'}',
+              time: _relativeTime(p.createdAt),
+            );
+          }).toList();
+
+          return Column(
+            children: items.map((item) => _ActivityTile(item: item)).toList(),
+          );
+        },
       ),
     );
+  }
+
+
+  String _relativeTime(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
   }
 }
 

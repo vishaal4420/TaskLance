@@ -89,7 +89,7 @@ class _UploadDeliverableScreenState
         'description': _descCtrl.text.trim(),
         'fileName': _fileName,
         'fileUrl': downloadUrl,
-        'status': _submitForReview ? 'review' : 'draft',
+        'status': _submitForReview ? 'pending_review' : 'draft',
         'createdAt': FieldValue.serverTimestamp(),
       };
       

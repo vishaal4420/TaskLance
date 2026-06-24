@@ -23,6 +23,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _titleCtrl = TextEditingController();
   final _rateCtrl = TextEditingController();
   final _bioCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _languagesCtrl = TextEditingController();
+  final _skillsCtrl = TextEditingController();
   
   bool _initialized = false;
   bool _saving = false;
@@ -35,6 +38,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _titleCtrl.dispose();
     _rateCtrl.dispose();
     _bioCtrl.dispose();
+    _locationCtrl.dispose();
+    _languagesCtrl.dispose();
+    _skillsCtrl.dispose();
     super.dispose();
   }
 
@@ -94,6 +100,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         'tagline': _titleCtrl.text.trim(),
         'hourlyRate': double.tryParse(_rateCtrl.text.trim()),
         'bio': _bioCtrl.text.trim(),
+        'location': _locationCtrl.text.trim(),
+        'languages': _languagesCtrl.text.trim(),
+        'skills': _skillsCtrl.text.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList(),
         if (_avatarUrl != null) 'avatarUrl': _avatarUrl,
       });
 
@@ -128,6 +137,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             _titleCtrl.text = user.tagline ?? '';
             _rateCtrl.text = user.hourlyRate?.toString() ?? '';
             _bioCtrl.text = user.bio ?? '';
+            _locationCtrl.text = user.location ?? '';
+            _languagesCtrl.text = user.languages ?? '';
+            _skillsCtrl.text = user.skills.join(', ');
             _avatarUrl = user.avatarUrl;
             _initialized = true;
           }
@@ -180,6 +192,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 controller: _bioCtrl,
                 maxLines: 4,
                 hint: 'Tell clients about yourself...',
+              ),
+              const SizedBox(height: 16),
+              AppTextField(
+                label: 'Location',
+                controller: _locationCtrl,
+                hint: 'San Francisco, CA',
+              ),
+              const SizedBox(height: 16),
+              AppTextField(
+                label: 'Languages',
+                controller: _languagesCtrl,
+                hint: 'English, Spanish',
+              ),
+              const SizedBox(height: 16),
+              AppTextField(
+                label: 'Skills (comma-separated)',
+                controller: _skillsCtrl,
+                hint: 'Flutter, Dart, Firebase',
               ),
               const SizedBox(height: 32),
               AppButton(

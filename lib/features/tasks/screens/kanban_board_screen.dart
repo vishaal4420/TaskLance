@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/widgets/cards.dart';
 import '../../../core/widgets/empty_error_states.dart';
+import '../../../core/widgets/task_draggable_card.dart';
 import '../../../models/task.dart';
-
 import '../providers/task_providers.dart';
 
 class KanbanBoardScreen extends ConsumerStatefulWidget {
@@ -19,151 +18,129 @@ class KanbanBoardScreen extends ConsumerStatefulWidget {
 }
 
 class _KanbanBoardScreenState extends ConsumerState<KanbanBoardScreen> {
-  int _selectedCol = 0;
-  final _pageCtrl = PageController();
-
   static const _columns = [
-    (label: 'To Do', status: TaskStatus.todo),
+    (label: 'Backlog', status: TaskStatus.todo),
     (label: 'In Progress', status: TaskStatus.inProgress),
-    (label: 'In Review', status: TaskStatus.inReview),
+    (label: 'Review', status: TaskStatus.inReview),
     (label: 'Done', status: TaskStatus.done),
   ];
 
   @override
-  void dispose() {
-    _pageCtrl.dispose();
-    super.dispose();
-  }
-
-  void _showCreateTask() {
-    context.push('/tasks/create', extra: widget.projectId);
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final tasksAsync = ref.watch(projectTasksProvider(widget.projectId));
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        tooltip: 'Add Task',
-        onPressed: _showCreateTask,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Task Tracker'),
+            Text('Manage your tasks via Kanban board.', style: AppTextStyles.labelSmall.copyWith(color: AppColors.textSecondaryLight)),
+          ],
+        ),
       ),
-      appBar: AppBar(title: const Text('Kanban Board')),
-      body: Column(
-        children: [
-          // Tab row
-          Container(
-            height: 48,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: List.generate(_columns.length, (i) {
-                final selected = _selectedCol == i;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() => _selectedCol = i);
-                      _pageCtrl.animateToPage(i,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut);
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
+      body: tasksAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => ErrorState(message: e.toString()),
+        data: (tasks) {
+          return ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.all(16),
+            itemCount: _columns.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final col = _columns[index];
+              final colTasks = tasks.where((t) => t.status == col.status).toList();
+
+              return SizedBox(
+                width: 300,
+                child: DragTarget<TaskModel>(
+                  onAcceptWithDetails: (details) {
+                    final task = details.data;
+                    if (task.status != col.status) {
+                      ref.read(taskControllerProvider.notifier).updateTaskStatus(task.id, col.status);
+                    }
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    final isHovering = candidateData.isNotEmpty;
+
+                    return Container(
                       decoration: BoxDecoration(
-                        color: selected
-                            ? AppColors.primary
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
+                        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: selected
-                              ? AppColors.primary
-                              : AppColors.borderLight,
+                          color: isHovering ? AppColors.primary : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                          width: isHovering ? 2 : 1,
                         ),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        _columns[i].label,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: selected
-                              ? Colors.white
-                              : AppColors.textSecondaryLight,
-                          fontWeight:
-                              selected ? FontWeight.w600 : FontWeight.normal,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ),
-          Expanded(
-            child: tasksAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => ErrorState(message: e.toString()),
-              data: (tasks) => PageView.builder(
-                controller: _pageCtrl,
-                onPageChanged: (i) => setState(() => _selectedCol = i),
-                itemCount: _columns.length,
-                itemBuilder: (_, colIdx) {
-                  final col = _columns[colIdx];
-                  final colTasks =
-                      tasks.where((t) => t.status == col.status).toList();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Row(
-                          children: [
-                            Text(col.label, style: AppTextStyles.titleMedium),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withOpacity(0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                colTasks.length.toString(),
-                                style: AppTextStyles.labelSmall
-                                    .copyWith(color: AppColors.primary),
+                      child: Column(
+                        children: [
+                          // Header
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(col.label, style: AppTextStyles.titleMedium),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    colTasks.length.toString(),
+                                    style: AppTextStyles.labelSmall.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Divider(height: 1, thickness: 1),
+
+                          // Tasks List
+                          Expanded(
+                            child: ListView.separated(
+                              padding: const EdgeInsets.all(12),
+                              itemCount: colTasks.length,
+                              separatorBuilder: (_, __) => const SizedBox(height: 12),
+                              itemBuilder: (_, i) => TaskDraggableCard(
+                                task: colTasks[i],
+                                onTap: () => context.push('/tasks/${colTasks[i].id}'),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: colTasks.isEmpty
-                            ? const EmptyState(
-                                title: 'No tasks',
-                                subtitle: 'Drop tasks here or create new ones',
-                              )
-                            : ListView.separated(
-                                padding: const EdgeInsets.all(12),
-                                itemCount: colTasks.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 8),
-                                itemBuilder: (_, i) => TaskCard(
-                                  task: colTasks[i],
-                                  onTap: () =>
-                                      context.push('/tasks/${colTasks[i].id}'),
-                                ),
+                          ),
+
+                          // Footer Add Button
+                          const Divider(height: 1, thickness: 1),
+                          InkWell(
+                            onTap: () {
+                              context.push('/tasks/create', extra: widget.projectId);
+                            },
+                            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.add, size: 16, color: AppColors.textSecondaryLight),
+                                  const SizedBox(width: 8),
+                                  Text('Add Task', style: AppTextStyles.labelMedium.copyWith(color: AppColors.textSecondaryLight)),
+                                ],
                               ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }

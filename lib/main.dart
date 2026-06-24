@@ -28,17 +28,18 @@ Future<void> main() async {
     debugPrint("Warning: .env file not found or could not be loaded. App will continue without it.");
   }
 
-  // Run Firebase and Hive initializations in parallel to reduce startup time
-  await Future.wait([
-    () async {
-      try {
-        await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-      } catch (e) {
-        debugPrint("Firebase init failed: $e");
-      }
-    }(),
-    Hive.initFlutter(),
-  ]);
+  // Initialize Hive
+  await Hive.initFlutter();
+
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    debugPrint("Firebase init failed: $e");
+    // If Firebase fails to initialize, we cannot proceed with FCM.
+    // In a real app, you might want to show an error screen here.
+    rethrow;
+  }
 
   // FCM
   if (!kIsWeb) {

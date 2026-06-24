@@ -11,7 +11,9 @@ import '../../../models/user.dart';
 import '../providers/auth_providers.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
-  const SignUpScreen({super.key});
+  final UserRole role;
+  
+  const SignUpScreen({super.key, this.role = UserRole.freelancer});
 
   @override
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
@@ -23,7 +25,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  UserRole _role = UserRole.freelancer;
+  late UserRole _role;
+
+  @override
+  void initState() {
+    super.initState();
+    _role = widget.role;
+  }
 
   @override
   void dispose() {
@@ -81,7 +89,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 24),
-                Text('Create account', style: AppTextStyles.displayMedium),
+                Text(
+                  _role == UserRole.client ? 'Sign up to hire talent' : 'Sign up to find work',
+                  style: AppTextStyles.displayMedium,
+                ),
                 const SizedBox(height: 6),
                 Text(
                   'Join thousands of freelancers and clients',
@@ -89,25 +100,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       .copyWith(color: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
                 ),
                 const SizedBox(height: 28),
-                // Role selector
-                SegmentedButton<UserRole>(
-                  segments: const [
-                    ButtonSegment(
-                      value: UserRole.freelancer,
-                      label: Text('Freelancer'),
-                      icon: Icon(Icons.work_rounded, size: 18),
-                    ),
-                    ButtonSegment(
-                      value: UserRole.client,
-                      label: Text('Client'),
-                      icon: Icon(Icons.business_rounded, size: 18),
-                    ),
-                  ],
-                  selected: {_role},
-                  onSelectionChanged: (s) =>
-                      setState(() => _role = s.first),
-                ),
-                const SizedBox(height: 24),
                 AppTextField(
                   label: 'Full Name',
                   hint: 'Alex Rivera',

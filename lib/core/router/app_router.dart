@@ -7,6 +7,7 @@ import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../models/user.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/signup_screen.dart';
+import '../../features/auth/screens/role_selection_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/email_verification_screen.dart';
 import '../../features/auth/screens/profile_setup_screen.dart';
@@ -31,6 +32,8 @@ import '../../features/chat/screens/new_conversation_screen.dart';
 import '../../features/chat/screens/video_call_screen.dart';
 import '../../features/payments/screens/invoices_list_screen.dart';
 import '../../features/payments/screens/create_invoice_screen.dart';
+import '../../features/payments/screens/mock_payment_modal.dart';
+import '../../features/payments/screens/wallet_dashboard_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/client_portal/screens/client_portal_home_screen.dart';
 import '../../features/time_tracking/screens/time_tracker_screen.dart';
@@ -73,6 +76,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.valueOrNull != null;
       final isAuthRoute = state.matchedLocation.startsWith('/login') ||
           state.matchedLocation.startsWith('/signup') ||
+          state.matchedLocation.startsWith('/role-select') ||
           state.matchedLocation.startsWith('/onboarding') ||
           state.matchedLocation.startsWith('/forgot-password') ||
           state.matchedLocation == '/';
@@ -107,7 +111,17 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       // Auth routes
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
+      GoRoute(
+        path: '/role-select',
+        builder: (_, __) => const RoleSelectionScreen(),
+      ),
+      GoRoute(
+        path: '/signup',
+        builder: (_, state) {
+          final role = state.extra as UserRole?;
+          return SignUpScreen(role: role ?? UserRole.freelancer);
+        },
+      ),
       GoRoute(
           path: '/forgot-password',
           builder: (_, __) => const ForgotPasswordScreen()),
@@ -265,6 +279,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+
+          // Wallet
+          GoRoute(
+            path: '/wallet',
+            builder: (_, __) => const WalletDashboardScreen(),
           ),
 
           // Notifications

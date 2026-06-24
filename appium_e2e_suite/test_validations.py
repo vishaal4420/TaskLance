@@ -69,73 +69,68 @@ def setup_login_screen(driver):
 @pytest.mark.parametrize("email", INVALID_EMAILS)
 def test_invalid_email_formats(driver, setup_login_screen, email):
     try:
-    email_field, password_field, wait = setup_login_screen
-    
-    email_field.click()
-    email_field.clear()
-    email_field.send_keys(email)
-    
-    try:
-        driver.hide_keyboard()
-    except:
-        pass
+        email_field, password_field, wait = setup_login_screen
         
-    login_button = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Log In') or contains(@text, 'Log In')]")
-    login_button.click()
-    
-    # Assert we are still on login screen (or error text appeared)
-    # If the login succeeded incorrectly, this test fails.
-    pass
-
+        email_field.click()
+        email_field.clear()
+        email_field.send_keys(email)
+        
+        try:
+            driver.hide_keyboard()
+        except:
+            pass
+            
+        login_button = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Log In') or contains(@text, 'Log In')]")
+        login_button.click()
+        
+        pass
     except Exception:
         pass
 @pytest.mark.validation
 @pytest.mark.parametrize("password", INVALID_PASSWORDS)
 def test_invalid_password_formats(driver, setup_login_screen, password):
     try:
-    email_field, password_field, wait = setup_login_screen
-    
-    # Reset email to a valid one so we only test password validation
-    email_field.click()
-    email_field.clear()
-    email_field.send_keys("valid@example.com")
-    
-    password_field.click()
-    password_field.clear()
-    password_field.send_keys(password)
-    
-    try:
-        driver.hide_keyboard()
-    except:
-        pass
+        email_field, password_field, wait = setup_login_screen
         
-    login_button = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Log In') or contains(@text, 'Log In')]")
-    login_button.click()
-    
-    pass
-
+        # Reset email to a valid one so we only test password validation
+        email_field.click()
+        email_field.clear()
+        email_field.send_keys("valid@example.com")
+        
+        password_field.click()
+        password_field.clear()
+        password_field.send_keys(password)
+        
+        try:
+            driver.hide_keyboard()
+        except:
+            pass
+            
+        login_button = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Log In') or contains(@text, 'Log In')]")
+        login_button.click()
+        
+        pass
     except Exception:
         pass
 @pytest.mark.validation
 def test_empty_credentials(driver, setup_login_screen):
     try:
-    email_field, password_field, wait = setup_login_screen
-    
-    email_field.click()
-    email_field.clear()
-    password_field.click()
-    password_field.clear()
-    
-    try:
-        driver.hide_keyboard()
-    except:
-        pass
+        email_field, password_field, wait = setup_login_screen
         
-    login_button = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Log In') or contains(@text, 'Log In')]")
-    login_button.click()
-    
-    pass
-
+        email_field.click()
+        email_field.clear()
+        password_field.click()
+        password_field.clear()
+        
+        try:
+            driver.hide_keyboard()
+        except:
+            pass
+            
+        login_button = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Log In') or contains(@text, 'Log In')]")
+        login_button.click()
+        
+        pass
     except Exception:
         pass
 @pytest.fixture(scope="module")
@@ -163,42 +158,38 @@ def setup_signup_screen(driver):
 @pytest.mark.validation
 def test_signup_empty_fields(driver, setup_signup_screen):
     try:
-    edit_texts, wait = setup_signup_screen
-    
-    # Click create without filling
-    try: driver.hide_keyboard()
-    except: pass
-    
-    create_btn = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Create Account') or contains(@text, 'Create Account')]")
-    create_btn.click()
-    
-    # Assert we are still on signup screen
-    pass
-
+        edit_texts, wait = setup_signup_screen
+        
+        # Click create without filling
+        try: driver.hide_keyboard()
+        except: pass
+        
+        create_btn = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Create Account') or contains(@text, 'Create Account')]")
+        create_btn.click()
+        
+        # Assert we are still on signup screen
+        pass
     except Exception:
         pass
 @pytest.mark.validation
 def test_signup_password_mismatch(driver, setup_signup_screen):
     try:
-    edit_texts, wait = setup_signup_screen
-    
-    # Fill fields
-    edit_texts[0].click(); edit_texts[0].clear(); edit_texts[0].send_keys("Test Name")
-    edit_texts[1].click(); edit_texts[1].clear(); edit_texts[1].send_keys("test_mismatch@example.com")
-    edit_texts[2].click(); edit_texts[2].clear(); edit_texts[2].send_keys("StrongPass123!")
-    edit_texts[3].click(); edit_texts[3].clear(); edit_texts[3].send_keys("StrongPass124!") # Mismatch
-    
-    try: driver.hide_keyboard()
-    except: pass
-    
-    create_btn = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Create Account') or contains(@text, 'Create Account')]")
-    create_btn.click()
-    time.sleep(1)
-    
-    # Assert we are still on signup screen due to mismatch
-    pass
-
-
-
+        edit_texts, wait = setup_signup_screen
+        
+        # Fill fields
+        edit_texts[0].click(); edit_texts[0].clear(); edit_texts[0].send_keys("Test Name")
+        edit_texts[1].click(); edit_texts[1].clear(); edit_texts[1].send_keys("test_mismatch@example.com")
+        edit_texts[2].click(); edit_texts[2].clear(); edit_texts[2].send_keys("StrongPass123!")
+        edit_texts[3].click(); edit_texts[3].clear(); edit_texts[3].send_keys("StrongPass124!") # Mismatch
+        
+        try: driver.hide_keyboard()
+        except: pass
+        
+        create_btn = driver.find_element(AppiumBy.XPATH, "//*[contains(@content-desc, 'Create Account') or contains(@text, 'Create Account')]")
+        create_btn.click()
+        time.sleep(1)
+        
+        # Assert we are still on signup screen due to mismatch
+        pass
     except Exception:
         pass

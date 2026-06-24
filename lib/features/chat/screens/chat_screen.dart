@@ -65,10 +65,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .doc(msgId);
       batch.set(msgRef, msg.toJson());
       
+      final reactMsgRef = FirebaseFirestore.instance.collection('messages').doc(msgId);
+      batch.set(reactMsgRef, {
+        'id': msgId,
+        'conversationId': widget.conversationId,
+        'senderId': user.uid,
+        'text': text,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+      
       final convRef = FirebaseFirestore.instance.collection('conversations').doc(widget.conversationId);
       batch.update(convRef, {
         'lastMessage': text,
         'lastMessageAt': msg.createdAt.toIso8601String(),
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
       });
       
       await batch.commit();

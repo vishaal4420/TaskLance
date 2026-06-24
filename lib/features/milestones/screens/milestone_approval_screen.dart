@@ -34,14 +34,16 @@ class _MilestoneApprovalScreenState
       final msRef = FirebaseFirestore.instance.collection('milestones').doc(widget.milestoneId);
       batch.update(msRef, {'status': status});
       
-      // Also update related deliverables if approving
-      if (status == MilestoneStatus.approved.name) {
-        final delivs = await FirebaseFirestore.instance
-            .collection('deliverables')
-            .where('milestoneId', isEqualTo: widget.milestoneId)
-            .get();
-        for (var doc in delivs.docs) {
+      // Also update related deliverables
+      final delivs = await FirebaseFirestore.instance
+          .collection('deliverables')
+          .where('milestoneId', isEqualTo: widget.milestoneId)
+          .get();
+      for (var doc in delivs.docs) {
+        if (status == MilestoneStatus.approved.name) {
           batch.update(doc.reference, {'status': 'approved'});
+        } else if (status == MilestoneStatus.revision.name) {
+          batch.update(doc.reference, {'status': 'rejected'});
         }
       }
       

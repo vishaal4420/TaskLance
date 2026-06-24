@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../auth/providers/auth_providers.dart';
 import '../../../models/user.dart';
 
@@ -21,6 +22,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _scaleAnim;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  bool _showButtons = false;
 
   @override
   void initState() {
@@ -67,7 +69,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         context.go('/dashboard');
       }
     } else {
-      context.go('/onboarding');
+      setState(() => _showButtons = true);
     }
   }
 
@@ -157,43 +159,69 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 ),
               ),
               const Spacer(),
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: AnimatedBuilder(
-                  animation: _progressCtrl,
-                  builder: (_, __) => Column(
-                    children: [
-                      Container(
-                        width: 160,
-                        height: 4,
-                        clipBehavior: Clip.hardEdge,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: FractionallySizedBox(
-                          widthFactor: _progressCtrl.value,
-                          alignment: Alignment.centerLeft,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.secondaryLight,
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.secondaryLight.withOpacity(0.6),
-                                  blurRadius: 8,
-                                  spreadRadius: 1,
+                FadeTransition(
+                  opacity: _fadeAnim,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    child: _showButtons
+                        ? Padding(
+                            key: const ValueKey('buttons'),
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              children: [
+                                AppButton(
+                                  label: 'Get Started',
+                                  onPressed: () => context.go('/onboarding'),
+                                  fullWidth: true,
                                 ),
+                                const SizedBox(height: 16),
+                                AppButton(
+                                  label: 'Sign In',
+                                  onPressed: () => context.go('/login'),
+                                  fullWidth: true,
+                                  variant: AppButtonVariant.ghost,
+                                ),
+                                const SizedBox(height: 48),
+                              ],
+                            ),
+                          )
+                        : AnimatedBuilder(
+                            key: const ValueKey('progress'),
+                            animation: _progressCtrl,
+                            builder: (_, __) => Column(
+                              children: [
+                                Container(
+                                  width: 160,
+                                  height: 4,
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: FractionallySizedBox(
+                                    widthFactor: _progressCtrl.value,
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.secondaryLight,
+                                        borderRadius: BorderRadius.circular(4),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.secondaryLight.withOpacity(0.6),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 54),
                               ],
                             ),
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 54),
-                    ],
                   ),
                 ),
-              ),
             ],
           ),
         ),

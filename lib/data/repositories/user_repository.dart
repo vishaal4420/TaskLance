@@ -13,7 +13,7 @@ class UserRepository extends BaseRepository {
   Future<UserModel?> getUser(String uid) async {
     final doc = await collection(_collectionName).doc(uid).get();
     if (doc.exists && doc.data() != null) {
-      return UserModel.fromJson(doc.data()!);
+      return UserModel.fromJson(doc.data()!, doc.id);
     }
     return null;
   }
@@ -32,7 +32,7 @@ class UserRepository extends BaseRepository {
   Stream<UserModel?> streamUser(String uid) {
     return collection(_collectionName).doc(uid).snapshots().map((doc) {
       if (doc.exists && doc.data() != null) {
-        return UserModel.fromJson(doc.data()!);
+        return UserModel.fromJson(doc.data()!, doc.id);
       }
       return null;
     });
