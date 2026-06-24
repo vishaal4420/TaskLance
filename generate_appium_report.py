@@ -4,8 +4,13 @@ import os
 
 def generate_report():
     try:
-        with open("d:\\TaskLance\\collected_tests.txt", "r", encoding="utf-16") as f:
-            lines = f.read().splitlines()
+    try:
+        try:
+            with open("collected_tests.txt", "r", encoding="utf-16") as f:
+                lines = f.read().splitlines()
+        except UnicodeError:
+            with open("collected_tests.txt", "r", encoding="utf-8") as f:
+                lines = f.read().splitlines()
     except FileNotFoundError:
         print("Error: collected_tests.txt not found.")
         return
@@ -35,7 +40,7 @@ def generate_report():
         })
 
     # Save to Excel
-    report_path = "d:\\TaskLance\\appium_e2e_suite\\reports\\Comprehensive_Appium_Test_Report.xlsx"
+    report_path = "appium_e2e_suite/reports/Comprehensive_Appium_Test_Report.xlsx"
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     
     df = pd.DataFrame(test_results)
@@ -66,7 +71,7 @@ def generate_report():
     print(f"Excel Report generated at: {report_path}")
 
     # Save as Markdown Artifact
-    md_path = "C:\\Users\\ADMIN\\.gemini\\antigravity-ide\\brain\\472e47fb-1e81-462b-bd38-ead162533c6e\\appium_test_report.md"
+    md_path = "appium_test_report.md"
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("# Comprehensive Appium Test Report\n\n")
         f.write(f"**Total Tests Executed:** {len(test_results)}\n")
