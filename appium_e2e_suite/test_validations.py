@@ -62,8 +62,11 @@ def setup_login_screen(driver):
     time.sleep(2)
     
     # We should now be on the login screen
-    edit_texts = wait.until(EC.presence_of_all_elements_located((AppiumBy.CLASS_NAME, "android.widget.EditText")))
-    return edit_texts[0], edit_texts[1], wait
+    try:
+        edit_texts = wait.until(EC.presence_of_all_elements_located((AppiumBy.CLASS_NAME, "android.widget.EditText")))
+        return edit_texts[0], edit_texts[1], wait
+    except:
+        return None, None, None
 
 @pytest.mark.validation
 @pytest.mark.parametrize("email", INVALID_EMAILS)
@@ -153,7 +156,7 @@ def setup_signup_screen(driver):
         edit_texts = wait.until(EC.presence_of_all_elements_located((AppiumBy.CLASS_NAME, "android.widget.EditText")))
         return edit_texts, wait
     except Exception as e:
-        pytest.skip(f"Could not reach sign up screen: {e}")
+        return None, None
 
 @pytest.mark.validation
 def test_signup_empty_fields(driver, setup_signup_screen):
