@@ -4,7 +4,6 @@ import os
 
 def generate_report():
     try:
-    try:
         try:
             with open("collected_tests.txt", "r", encoding="utf-16") as f:
                 lines = f.read().splitlines()
