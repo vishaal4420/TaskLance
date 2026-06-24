@@ -38,12 +38,11 @@ jobs:
           flutter build apk --debug
 
       - name: Run Appium E2E Test Suite
-        shell: bash
         run: |
           # Use optimized telemetry collector to bypass slow emulator UI booting
-          pytest appium_e2e_suite/ --collect-only -q > collected_tests.txt || true
+          pytest appium_e2e_suite/ --collect-only -q > collected_tests.txt
           python generate_appium_report.py
-          cp appium_e2e_suite/reports/Comprehensive_Appium_Test_Report.xlsx TaskLance_Test_Report.xlsx
+          Copy-Item "appium_e2e_suite/reports/Comprehensive_Appium_Test_Report.xlsx" -Destination "TaskLance_Test_Report.xlsx" -Force
 
       - name: Upload Test Report
         uses: actions/upload-artifact@v4
